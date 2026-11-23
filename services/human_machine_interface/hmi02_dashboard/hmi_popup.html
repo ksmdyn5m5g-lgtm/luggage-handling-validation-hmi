@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>per07 Live View - Zone 1 / Zone 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page-bg: oklch(0.97 0.003 260);
+    --surface: oklch(0.99 0.002 260);
+    --surface-sunken: oklch(0.96 0.003 260);
+    --border: oklch(0.9 0.005 260);
+    --border-faint: oklch(0.93 0.004 260);
+    --ink: oklch(0.25 0.01 260);
+    --ink-muted: oklch(0.5 0.01 260);
+    --ink-faint: oklch(0.55 0.01 260);
+    --blue: oklch(0.55 0.13 250);
+    --green: oklch(0.55 0.13 145);
+    --green-bg: oklch(0.95 0.03 145);
+    --amber: oklch(0.55 0.13 70);
+    --amber-bg: oklch(0.95 0.05 70);
+    --red: oklch(0.55 0.13 25);
+    --red-bg: oklch(0.95 0.03 25);
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --page-bg: oklch(0.19 0.008 260);
+      --surface: oklch(0.23 0.009 260);
+      --surface-sunken: oklch(0.17 0.008 260);
+      --border: oklch(0.32 0.01 260);
+      --border-faint: oklch(0.28 0.01 260);
+      --ink: oklch(0.94 0.005 260);
+      --ink-muted: oklch(0.72 0.01 260);
+      --ink-faint: oklch(0.62 0.01 260);
+      --blue: oklch(0.72 0.12 250);
+      --green: oklch(0.75 0.14 145);
+      --green-bg: oklch(0.3 0.06 145);
+      --amber: oklch(0.78 0.13 70);
+      --amber-bg: oklch(0.32 0.07 70);
+      --red: oklch(0.7 0.16 25);
+      --red-bg: oklch(0.3 0.07 25);
+    }
+  }
+  *{ box-sizing: border-box; }
+  /* .empty sets display:flex, which outranks the UA's [hidden]{display:none}
+     on specificity - without this the placeholder stays on screen underneath
+     the live frame once the first image arrives. */
+  [hidden]{ display: none !important; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--page-bg); color: var(--ink); font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    display: flex; flex-direction: column; min-height: 100vh;
+  }
+  .mono{ font-family: var(--mono); }
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; gap:20px;
+    padding: 12px 20px; background: var(--surface);
+    border-bottom: 1px solid var(--border); flex: none;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:22px; height:22px; border-radius:5px; background: var(--blue); flex:none; }
+  .brand h1{ font-size: 14px; font-weight: 600; margin:0; letter-spacing:-0.01em; }
+  .brand p{ font-size: 11px; color: var(--ink-faint); margin:2px 0 0; }
+
+  .status{ display:flex; align-items:center; gap:14px; font-size:11.5px; color: var(--ink-muted); }
+  .dot{ width:8px; height:8px; border-radius:50%; background: var(--ink-faint); flex:none; }
+  .dot.live{ background: var(--green); animation: pulse 1.8s ease-in-out infinite; }
+  .dot.stale{ background: var(--amber); }
+  .dot.down{ background: var(--red); }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
+  @media (prefers-reduced-motion: reduce){ .dot{ animation:none !important; } }
+
+  .views{
+    flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 14px; padding: 14px; align-content: start;
+  }
+  .pane{
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
+  }
+  .pane-head{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding: 9px 13px; border-bottom: 1px solid var(--border-faint);
+    background: var(--surface-sunken);
+  }
+  .pane-title{ font-size:12px; font-weight:600; letter-spacing:.02em; }
+  .zone-tag{
+    font-family: var(--mono); font-size:10px; font-weight:500;
+    padding: 2px 7px; border-radius: 4px; letter-spacing:.04em;
+    background: var(--amber-bg); color: var(--amber);
+  }
+  .zone-tag.ok{ background: var(--green-bg); color: var(--green); }
+  .zone-tag.bad{ background: var(--red-bg); color: var(--red); }
+  .age{ font-family: var(--mono); font-size:10.5px; color: var(--ink-faint); }
+
+  .shot{ position: relative; background: var(--surface-sunken); min-height: 220px; }
+  .shot img{ display:block; width:100%; height:auto; }
+  .shot .empty{
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    padding: 50px 22px; font-size:12.5px; color: var(--ink-faint); line-height:1.6;
+  }
+
+  .footer{
+    flex:none; padding: 9px 20px; border-top: 1px solid var(--border);
+    background: var(--surface); display:flex; gap:22px; align-items:center;
+    font-size:11px; color: var(--ink-faint); flex-wrap: wrap;
+  }
+  .key{ display:flex; align-items:center; gap:6px; }
+  .sw{ width:11px; height:11px; border-radius:3px; flex:none; border:1px solid rgba(0,0,0,.15); }
+  .footer label{ display:flex; align-items:center; gap:6px; cursor:pointer; margin-left:auto; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <h1>per07 &mdash; Live Zone View</h1>
+      <p>Zone 1 tracking &middot; Zone 2 re-identification</p>
+    </div>
+  </div>
+  <div class="status">
+    <span><span class="dot" id="conn-dot"></span> <span id="conn-text">connecting&hellip;</span></span>
+    <span class="mono" id="verdict">no verdict yet</span>
+  </div>
+</div>
+
+<div class="views">
+  <div class="pane">
+    <div class="pane-head">
+      <span class="pane-title">ZONE 1 &mdash; Tracking (Cam1)</span>
+      <span class="zone-tag" id="tag-cam1">waiting</span>
+      <span class="age mono" id="age-cam1">&mdash;</span>
+    </div>
+    <div class="shot">
+      <div class="empty" id="empty-cam1">
+        Waiting for the first annotated Cam1 frame.<br>
+        per07 publishes it from the Cam1 stream while it is running.
+      </div>
+      <img id="img-cam1" alt="Zone 1 tracking view" hidden>
+    </div>
+  </div>
+
+  <div class="pane">
+    <div class="pane-head">
+      <span class="pane-title">ZONE 2 &mdash; Validating (Cam2)</span>
+      <span class="zone-tag" id="tag-cam2">waiting</span>
+      <span class="age mono" id="age-cam2">&mdash;</span>
+    </div>
+    <div class="shot">
+      <div class="empty" id="empty-cam2">
+        Waiting for the first annotated Cam2 frame.
+      </div>
+      <img id="img-cam2" alt="Zone 2 validation view" hidden>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span class="key"><span class="sw" style="background:#64dc50"></span> enrolled / matched</span>
+  <span class="key"><span class="sw" style="background:#ffaa00"></span> tracked but not enrolled</span>
+  <span class="key"><span class="sw" style="background:#eb3c3c"></span> not matched</span>
+  <label><input type="checkbox" id="pause"> pause</label>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var VIEWS = ["cam1", "cam2"];
+  var POLL_MS = 500;           // display refresh; per07 caps its own render rate
+  var STALE_S = 4;             // frame older than this => amber, not live
+
+  var els = {};
+  VIEWS.forEach(function(v){
+    els[v] = {
+      img:   document.getElementById("img-" + v),
+      empty: document.getElementById("empty-" + v),
+      tag:   document.getElementById("tag-" + v),
+      age:   document.getElementById("age-" + v),
+      busy:  false,
+      lastUrl: null
+    };
+  });
+  var pauseBox = document.getElementById("pause");
+  var connDot = document.getElementById("conn-dot");
+  var connText = document.getElementById("conn-text");
+  var verdictEl = document.getElementById("verdict");
+  var lastOkAt = 0;
+
+  function setConn(state, text){
+    connDot.className = "dot" + (state ? " " + state : "");
+    connText.textContent = text;
+  }
+
+  // Blob URLs rather than cache-busted <img src>: the object URL is revoked
+  // as soon as the next frame replaces it, so a long-running popup does not
+  // accumulate decoded frames in the browser's memory or its HTTP cache.
+  function swap(view, blob, ageS){
+    var e = els[view];
+    var url = URL.createObjectURL(blob);
+    e.img.onload = function(){
+      if (e.lastUrl) URL.revokeObjectURL(e.lastUrl);
+      e.lastUrl = url;
+      e.img.hidden = false;
+      e.empty.hidden = true;
+    };
+    e.img.src = url;
+    e.age.textContent = ageS.toFixed(1) + "s ago";
+    var stale = ageS > STALE_S;
+    e.tag.textContent = stale ? "stale" : "live";
+    e.tag.className = "zone-tag" + (stale ? "" : " ok");
+  }
+
+  function poll(view){
+    var e = els[view];
+    if (e.busy || pauseBox.checked) return;
+    e.busy = true;
+    fetch("/frame?view=" + view, { cache: "no-store" })
+      .then(function(r){
+        if (r.status === 204){
+          e.tag.textContent = "no frame";
+          e.tag.className = "zone-tag";
+          lastOkAt = Date.now();
+          return null;
+        }
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        lastOkAt = Date.now();
+        var age = parseFloat(r.headers.get("X-Frame-Age-S") || "0");
+        return r.blob().then(function(b){ swap(view, b, isFinite(age) ? age : 0); });
+      })
+      .catch(function(){
+        e.tag.textContent = "offline";
+        e.tag.className = "zone-tag bad";
+      })
+      .finally(function(){ e.busy = false; });
+  }
+
+  setInterval(function(){
+    VIEWS.forEach(poll);
+    if (pauseBox.checked){ setConn("", "paused"); return; }
+    var since = (Date.now() - lastOkAt) / 1000;
+    if (!lastOkAt)      setConn("", "connecting…");
+    else if (since < 3) setConn("live", "connected to hmi02_dashboard");
+    else                setConn("down", "hmi02_dashboard not responding");
+  }, POLL_MS);
+
+  // Verdicts arrive on the same SSE feed the main dashboard uses, so the
+  // popup shows the outcome next to the imagery without a second mechanism.
+  try {
+    var src = new EventSource("/events");
+    src.onmessage = function(ev){
+      var d;
+      try { d = JSON.parse(ev.data); } catch(_){ return; }
+      if (d.kind === "result"){
+        verdictEl.textContent = d.baggage_id + " → " + d.status + " (" + Number(d.final_score).toFixed(3) + ")";
+      } else if (d.kind === "alert"){
+        verdictEl.textContent = "⚠ " + d.baggage_id + " → " + d.reason;
+      }
+    };
+  } catch(_){ /* imagery still works without the event feed */ }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>per07 Validation Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page-bg: oklch(0.97 0.003 260);
+    --surface: oklch(0.99 0.002 260);
+    --surface-sunken: oklch(0.96 0.003 260);
+    --table-header-bg: oklch(0.965 0.003 260);
+    --row-hover: oklch(0.97 0.004 250);
+    --border: oklch(0.9 0.005 260);
+    --border-subtle: oklch(0.92 0.004 260);
+    --border-faint: oklch(0.93 0.004 260);
+    --border-hairline: oklch(0.95 0.003 260);
+    --ink: oklch(0.25 0.01 260);
+    --ink-secondary: oklch(0.4 0.01 260);
+    --ink-mono: oklch(0.45 0.02 260);
+    --ink-muted: oklch(0.5 0.01 260);
+    --ink-faint: oklch(0.55 0.01 260);
+    --ink-fainter: oklch(0.6 0.01 260);
+    --ink-fainter2: oklch(0.62 0.01 260);
+    --blue: oklch(0.55 0.13 250);
+    --blue-hover: oklch(0.45 0.13 250);
+    --green: oklch(0.55 0.13 145);
+    --green-bg: oklch(0.95 0.03 145);
+    --amber: oklch(0.55 0.13 70);
+    --amber-bg: oklch(0.95 0.05 70);
+    --red: oklch(0.55 0.13 25);
+    --red-bg: oklch(0.95 0.03 25);
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--page-bg); color: var(--ink); font-family: var(--sans);
+    min-width: 1380px; -webkit-font-smoothing: antialiased;
+  }
+  a{ color: var(--blue); }
+  a:hover{ color: var(--blue-hover); }
+  .mono{ font-family: var(--mono); }
+  .tab{ font-variant-numeric: tabular-nums; }
+
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.25; } }
+  @media (prefers-reduced-motion: reduce){ .live-dot{ animation: none !important; } }
+
+  .topbar{
+    position: sticky; top: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px; padding: 14px 28px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .brand{ display:flex; align-items:center; gap:16px; }
+  .brand-mark{ width:26px; height:26px; border-radius:5px; background: var(--blue); flex: none; }
+  .brand-text h1{ margin:0; font-size:15px; font-weight:600; letter-spacing:-0.01em; }
+  .brand-text .sub{ font-family: var(--mono); font-size:11px; color: var(--ink-faint); margin-top:2px; }
+  .kpis{ display:flex; align-items:center; gap:28px; }
+  .kpi{ text-align:right; }
+  .kpi .v{ font-family: var(--mono); font-size:13px; font-weight:600; }
+  .kpi .v .unit{ font-size:10px; font-weight:400; color: var(--ink-faint); margin-left:2px; }
+  .kpi .l{ font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color: var(--ink-faint); margin-top:2px; }
+  .kpi.exceptions .v{ color: var(--red); }
+  .pill{ display:flex; align-items:center; gap:7px; padding:6px 12px; border:1px solid var(--border); border-radius:4px; }
+  .zone-view-btn{
+    font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 7px 13px; cursor: pointer; white-space: nowrap;
+  }
+  .zone-view-btn:hover{ background: var(--surface-sunken); border-color: var(--ink-fainter); }
+  .zone-view-btn:focus-visible{ outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  .live-dot{ width:7px; height:7px; border-radius:50%; background: var(--ink-fainter); }
+  .live-dot.on{ background: var(--green); animation: pulse 1.6s infinite; }
+  .live-dot.off{ background: var(--red); }
+  .pill .label{ font-family: var(--mono); font-size:11px; font-weight:500; }
+
+  .section-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+  .section-head .t{ font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color: var(--ink-faint); }
+  .section-head .r{ font-family: var(--mono); font-size:11px; color: var(--ink-faint); }
+  .inputs{ padding: 22px 28px 0; }
+  .inputs-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; }
+  .stream-card{ background: var(--surface); border:1px solid var(--border); border-radius:6px; padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+  .stream-card .hd{ display:flex; justify-content:space-between; align-items:baseline; }
+  .stream-card .hd .stage{ font-family: var(--mono); font-size:9px; color: var(--ink-faint); }
+  .stream-card .hd .name{ font-size:14px; font-weight:600; letter-spacing:-0.01em; margin-top:2px; }
+  .dir-dot{ display:flex; align-items:center; gap:6px; }
+  .dir-dot .dot{ width:8px; height:8px; border-radius:50%; background: var(--green); flex:none; }
+  .dir-dot .dir{ font-family: var(--mono); font-size:9px; letter-spacing:0.06em; color: var(--ink-fainter); }
+  .stream-chip{ font-family: var(--mono); font-size:11px; color: var(--ink-mono); background: var(--surface-sunken); border-radius:3px; padding:5px 7px; width: fit-content; }
+  .stream-blurb{ font-size:11px; line-height:1.5; color: var(--ink-muted); }
+
+  .main{ display:grid; grid-template-columns: minmax(0,1fr) 380px; gap:20px; padding:22px 28px 0; align-items:start; }
+  .card{ background: var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  .card-head{ padding:13px 16px; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center; }
+  .card-head .t{ font-size:12px; font-weight:600; }
+  .chips{ display:flex; gap:6px; }
+  .chip{ font-family: var(--mono); font-size:10px; padding:4px 9px; border-radius:3px; border:1px solid var(--border); color: var(--ink-mono); cursor:pointer; background:none; }
+  .chip:hover{ background: var(--surface-sunken); }
+  .chip.active{ background: var(--blue); border-color: var(--blue); color: white; }
+
+  .ledger-cols{ display:grid; grid-template-columns: minmax(96px,116px) minmax(120px,1fr) minmax(80px,96px) minmax(72px,84px) minmax(64px,76px) minmax(96px,120px); }
+  .ledger-header{ padding:9px 16px; background: var(--table-header-bg); border-bottom:1px solid var(--border-subtle); font-size:9px; text-transform:uppercase; letter-spacing:0.08em; color: var(--ink-faint); }
+  .ledger-body{ max-height:520px; overflow:auto; }
+  .empty-state{ padding:40px 16px; text-align:center; font-size:12px; color: var(--ink-fainter); font-family: var(--mono); }
+  .ledger-row{ padding:11px 16px; border-bottom:1px solid var(--border-hairline); font-family: var(--mono); font-size:11.5px; align-items:center; cursor:pointer; }
+  .ledger-row:hover{ background: var(--row-hover); }
+  .ledger-row.sel{ background: var(--row-hover); box-shadow: inset 2px 0 0 var(--blue); }
+  .ledger-row .bagid{ font-weight:600; }
+  .ledger-row .dims{ color: var(--ink-secondary); }
+  .transit-cell{ display:flex; align-items:center; gap:6px; }
+  .transit-bar{ height:4px; width:52px; border-radius:2px; background: var(--border-faint); overflow:hidden; flex:none; }
+  .transit-bar span{ display:block; height:100%; background: var(--blue); }
+  .transit-cell .t{ font-size:10px; color: var(--ink-muted); }
+  .score-cell{ font-weight:500; }
+  .cyc-cell{ color: var(--ink-muted); }
+  .badge{ display:inline-block; font-size:9.5px; font-weight:600; letter-spacing:0.04em; padding:3px 8px; border-radius:3px; text-align:center; }
+  .badge.MATCHED{ color: var(--green); background: var(--green-bg); }
+  .badge.NOT_MATCHED{ color: var(--ink-faint); background: var(--surface-sunken); }
+  .badge.MAX_CYCLE_EXCEEDED{ color: var(--red); background: var(--red-bg); }
+  .badge.TRANSIT_TIME_EXCEEDED{ color: var(--amber); background: var(--amber-bg); }
+  .badge.ERROR_VALIDATE{ color: var(--red); background: var(--red-bg); }
+
+  .side-col{ display:flex; flex-direction:column; gap:20px; }
+  .detail-body{ padding:16px; display:flex; flex-direction:column; gap:16px; }
+  .fact-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  .fact .l{ font-size:9px; text-transform:uppercase; letter-spacing:0.07em; color: var(--ink-fainter); }
+  .fact .v{ font-family: var(--mono); font-size:12px; font-weight:500; margin-top:3px; }
+  .subsection{ border-top:1px solid var(--border-faint); padding-top:14px; }
+  .subsection .lbl{ font-size:9px; text-transform:uppercase; letter-spacing:0.08em; color: var(--ink-fainter); margin-bottom:9px; }
+  .check-row{ display:flex; justify-content:space-between; align-items:center; padding:4px 0; gap:8px; }
+  .check-row .l{ font-size:11.5px; color: var(--ink-secondary); }
+  .verdict{ font-family: var(--mono); font-size:10px; font-weight:600; padding:2px 7px; border-radius:3px; flex:none; }
+  .verdict.PASS{ color: var(--green); background: var(--green-bg); }
+  .verdict.REVIEW{ color: var(--red); background: var(--red-bg); }
+  .raw-entry{ font-family: var(--mono); font-size:10px; line-height:1.6; color: var(--ink-mono); background: var(--surface-sunken); border-radius:4px; padding:10px; white-space: pre-wrap; word-break: break-all; }
+  .detail-empty{ padding:16px; font-size:11.5px; color: var(--ink-fainter); }
+
+  .exc-item{ padding:12px 16px; border-bottom:1px solid var(--border-hairline); display:flex; flex-direction:column; gap:4px; }
+  .exc-item:last-child{ border-bottom:none; }
+  .exc-top{ display:flex; justify-content:space-between; }
+  .exc-code{ font-family: var(--mono); font-size:10px; font-weight:600; color: var(--red); }
+  .exc-ts{ font-family: var(--mono); font-size:9.5px; color: var(--ink-fainter2); }
+  .exc-body{ font-size:11.5px; line-height:1.45; color: var(--ink-secondary); }
+
+  .footer-note{ margin: 22px 28px 28px; font-size:10.5px; color: var(--ink-fainter); font-family: var(--mono); }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div class="brand-text">
+      <h1>Luggage &middot; per07 Validation Console</h1>
+      <div class="sub" id="sub-line">hmi02_dashboard &middot; connecting&hellip;</div>
+    </div>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><div class="v tab" id="kpi-throughput">&mdash;</div><div class="l">Validated/min</div></div>
+    <div class="kpi"><div class="v tab" id="kpi-matchrate">&mdash;</div><div class="l">Match rate</div></div>
+    <div class="kpi exceptions"><div class="v tab" id="kpi-exceptions">0</div><div class="l">Open exceptions</div></div>
+    <button type="button" class="zone-view-btn" id="open-zone-view">Live zone view</button>
+    <div class="pill"><span class="live-dot" id="live-dot"></span><span class="label" id="live-label">CONNECTING</span></div>
+  </div>
+</div>
+<script>
+  // Opens the annotated Cam1/Cam2 views in their own window so they can sit
+  // on a second monitor beside this console. Falls back to a normal
+  // navigation if the browser blocks the popup.
+  document.getElementById("open-zone-view").addEventListener("click", function(){
+    var w = window.open("/popup", "per07-zone-view", "width=1280,height=760,noopener");
+    if (!w) window.location.href = "/popup";
+  });
+</script>
+
+<div class="inputs">
+  <div class="section-head"><span class="t">Streams &middot; per07 consumes / publishes</span></div>
+  <div class="inputs-grid">
+    <div class="stream-card"><div class="hd"><div><div class="stage">IN &middot; ZONE 1</div><div class="name">live_camera</div></div><div class="dir-dot"><span class="dot"></span><span class="dir">CONSUME</span></div></div><div class="stream-chip">live_camera</div><div class="stream-blurb">Cam1 induction frames &mdash; baseline extraction runs on arrival here.</div></div>
+    <div class="stream-card"><div class="hd"><div><div class="stage">IN &middot; LIDAR</div><div class="name">live_lidar</div></div><div class="dir-dot"><span class="dot"></span><span class="dir">CONSUME</span></div></div><div class="stream-chip">live_lidar</div><div class="stream-blurb">Point clouds paired to Cam1 within an 0.8s sync tolerance for each 3D baseline.</div></div>
+    <div class="stream-card"><div class="hd"><div><div class="stage">IN &middot; ZONE 2</div><div class="name">live_camera193</div></div><div class="dir-dot"><span class="dot"></span><span class="dir">CONSUME</span></div></div><div class="stream-chip">live_camera193</div><div class="stream-blurb">Cam2 candidate frames &mdash; every detected box scored against active baselines.</div></div>
+    <div class="stream-card"><div class="hd"><div><div class="stage">OUT &middot; RESULTS</div><div class="name">validation:results</div></div><div class="dir-dot"><span class="dot"></span><span class="dir">PUBLISH</span></div></div><div class="stream-chip">validation:results</div><div class="stream-blurb">One verdict per cycle: fused score, evidence breakdown, elapsed transit time.</div></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="card">
+    <div class="card-head">
+      <span class="t">Live validation ledger</span>
+      <div class="chips" id="filter-chips">
+        <button class="chip active" data-f="ALL">ALL</button>
+        <button class="chip" data-f="MATCHED">MATCHED</button>
+        <button class="chip" data-f="EXCEPTIONS">EXCEPTIONS</button>
+        <button class="chip" data-f="LOWCONF">LOW SIFT</button>
+      </div>
+    </div>
+    <div class="ledger-header ledger-cols">
+      <div>Luggage ID</div><div>Dimensions L&times;W&times;H cm</div><div>Transit</div><div>Score</div><div>Cycle</div><div>Status</div>
+    </div>
+    <div class="ledger-body" id="ledger-body">
+      <div class="empty-state">waiting for the first validation&hellip;</div>
+    </div>
+  </div>
+
+  <div class="side-col">
+    <div class="card">
+      <div class="card-head"><span class="t">Luggage detail</span><span class="mono tab" id="detail-bagid" style="font-size:11px;font-weight:600;"></span></div>
+      <div id="detail-body"><div class="detail-empty">Select a row once results start arriving.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="t">Exception feed &middot; error:alerts</span></div>
+      <div id="exception-feed"><div class="detail-empty">No exceptions yet.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer-note">Results of per07_dynamic_validation_service &middot; served by hmi02_dashboard &middot; live, no simulated data</div>
+
+<script>
+(function(){
+  var rows = [];       // newest first, capped at 24
+  var exceptions = []; // newest first
+  var selected = null;
+  var activeFilter = 'ALL';
+  var resultTimestamps = []; // for the 60s-window KPIs
+
+  function fmt(n, d){ return (typeof n === 'number') ? n.toFixed(d===undefined?1:d) : '&mdash;'; }
+  function tsFmt(v){ return (v == null) ? '&mdash;' : Number(v).toFixed(3) + 's'; }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function passesFilter(r){
+    if (activeFilter === 'ALL') return true;
+    if (activeFilter === 'MATCHED') return r.status === 'MATCHED';
+    if (activeFilter === 'EXCEPTIONS') return r.status === 'MAX_CYCLE_EXCEEDED' || r.status === 'TRANSIT_TIME_EXCEEDED' || r.status === 'ERROR_VALIDATE';
+    if (activeFilter === 'LOWCONF') return r.sift_score === 0;
+    return true;
+  }
+
+  function renderLedger(){
+    var body = document.getElementById('ledger-body');
+    if (rows.length === 0){
+      body.innerHTML = '<div class="empty-state">waiting for the first validation&hellip;</div>';
+      return;
+    }
+    var visible = rows.filter(passesFilter);
+    if (visible.length === 0){
+      body.innerHTML = '<div class="empty-state">no rows match this filter</div>';
+      return;
+    }
+    body.innerHTML = visible.map(function(r){
+      var pct = Math.min(100, (r.cycle_count/3)*100);
+      var dims = r.dimensions_m ? Math.round(r.dimensions_m[0]*100) + '&times;' + Math.round(r.dimensions_m[1]*100) + '&times;' + Math.round(r.dimensions_m[2]*100) : '&mdash;';
+      return '<div class="ledger-row ledger-cols' + (r.baggage_id===selected?' sel':'') + '" data-bag="' + esc(r.baggage_id) + '">' +
+        '<div class="bagid">' + esc(r.baggage_id) + '</div>' +
+        '<div class="dims">' + dims + '</div>' +
+        '<div class="transit-cell"><div class="transit-bar"><span style="width:' + pct + '%"></span></div><span class="t">' + (r.elapsed_transit_s? fmt(r.elapsed_transit_s,1)+'s':'&mdash;') + '</span></div>' +
+        '<div class="score-cell">' + fmt(r.final_score,3) + '</div>' +
+        '<div class="cyc-cell">' + r.cycle_count + '/3</div>' +
+        '<div><span class="badge ' + r.status + '">' + r.status.replace(/_/g,' ') + '</span></div>' +
+      '</div>';
+    }).join('');
+    Array.prototype.forEach.call(body.querySelectorAll('.ledger-row'), function(el){
+      el.addEventListener('click', function(){ selected = el.getAttribute('data-bag'); renderDetail(); renderLedger(); });
+    });
+  }
+
+  function checksFor(r){
+    return [
+      { label: 'Class matches Zone 1 baseline', pass: !!r.class_match },
+      { label: 'Verified SIFT evidence (&ge; 8 inliers)', pass: r.sift_score > 0 },
+      { label: 'Within 60&ndash;90s transit window', pass: r.status !== 'TRANSIT_TIME_EXCEEDED' },
+      { label: 'Fused score &ge; 0.40 pass threshold', pass: r.final_score >= 0.40 },
+      { label: 'Resolved within 3 cycles', pass: r.status !== 'MAX_CYCLE_EXCEEDED' },
+    ];
+  }
+
+  function renderDetail(){
+    var r = rows.filter(function(x){ return x.baggage_id === selected; })[0];
+    if (!r){
+      document.getElementById('detail-bagid').textContent = '';
+      document.getElementById('detail-body').innerHTML = '<div class="detail-empty">Select a row once results start arriving.</div>';
+      return;
+    }
+    document.getElementById('detail-bagid').textContent = r.baggage_id;
+    var dims = r.dimensions_m ? (Math.round(r.dimensions_m[0]*100) + '&times;' + Math.round(r.dimensions_m[1]*100) + '&times;' + Math.round(r.dimensions_m[2]*100) + ' cm') : '&mdash;';
+    var checks = checksFor(r);
+    document.getElementById('detail-body').innerHTML =
+      '<div class="detail-body">' +
+      '<div class="fact-grid">' +
+        '<div class="fact"><div class="l">Dimensions</div><div class="v">' + dims + '</div></div>' +
+        '<div class="fact"><div class="l">Cycle</div><div class="v">' + r.cycle_count + ' / 3</div></div>' +
+        '<div class="fact"><div class="l">Cam2 timestamp</div><div class="v">' + tsFmt(r.cam2_ts) + '</div></div>' +
+        '<div class="fact"><div class="l">Elapsed transit</div><div class="v">' + tsFmt(r.elapsed_transit_s) + '</div></div>' +
+        '<div class="fact"><div class="l">Color correlation</div><div class="v">' + fmt(r.color_score*100,1) + '%</div></div>' +
+        '<div class="fact"><div class="l">Fused score</div><div class="v">' + fmt(r.final_score,4) + '</div></div>' +
+      '</div>' +
+      '<div class="subsection"><div class="lbl">Validation checks</div>' +
+        checks.map(function(c){ return '<div class="check-row"><span class="l">' + c.label + '</span><span class="verdict ' + (c.pass?'PASS':'REVIEW') + '">' + (c.pass?'PASS':'REVIEW') + '</span></div>'; }).join('') +
+      '</div>' +
+      '<div class="subsection"><div class="lbl">Raw stream entry</div>' +
+        '<div class="raw-entry">XADD validation:results * baggage_id &quot;' + esc(r.baggage_id) + '&quot; status &quot;' + esc(r.status) + '&quot; final_score &quot;' + fmt(r.final_score,4) + '&quot; sift_score &quot;' + fmt(r.sift_score,4) + '&quot; class_match &quot;' + (r.class_match?'True':'False') + '&quot; color_score &quot;' + fmt(r.color_score,4) + '&quot; cycle_count &quot;' + r.cycle_count + '&quot; elapsed_transit_s &quot;' + (r.elapsed_transit_s? fmt(r.elapsed_transit_s,3):'0.000') + '&quot;</div>' +
+      '</div>' +
+      '</div>';
+  }
+
+  function renderExceptions(){
+    var el = document.getElementById('exception-feed');
+    if (exceptions.length === 0){ el.innerHTML = '<div class="detail-empty">No exceptions yet.</div>'; return; }
+    el.innerHTML = exceptions.slice(0, 24).map(function(e){
+      return '<div class="exc-item"><div class="exc-top"><span class="exc-code">' + esc(e.reason) + '</span><span class="exc-ts">' + e.time + '</span></div>' +
+        '<div class="exc-body">' + esc(e.baggage_id) + ' &mdash; ' + e.cycles_attempted + ' cycle(s) attempted, never reached MATCHED.</div></div>';
+    }).join('');
+  }
+
+  function renderKPIs(){
+    var now = Date.now()/1000;
+    resultTimestamps = resultTimestamps.filter(function(t){ return now - t <= 60; });
+    var recent = rows.filter(function(r){ return now - r._receivedAt <= 60; });
+    document.getElementById('kpi-throughput').innerHTML = recent.length + '<span class="unit">/60s</span>';
+    if (recent.length > 0){
+      var matched = recent.filter(function(r){ return r.status === 'MATCHED'; }).length;
+      document.getElementById('kpi-matchrate').innerHTML = Math.round(100*matched/recent.length) + '<span class="unit">%</span>';
+    } else {
+      document.getElementById('kpi-matchrate').innerHTML = '&mdash;';
+    }
+    document.getElementById('kpi-exceptions').textContent = exceptions.length;
+  }
+
+  function onResult(data){
+    data._receivedAt = Date.now()/1000;
+    rows = rows.filter(function(r){ return r.baggage_id !== data.baggage_id; });
+    rows.unshift(data);
+    if (rows.length > 24) rows = rows.slice(0, 24);
+    if (selected === null) selected = data.baggage_id;
+    renderLedger(); renderDetail(); renderKPIs();
+  }
+
+  function onAlert(data){
+    exceptions.unshift({
+      reason: data.reason, baggage_id: data.baggage_id, cycles_attempted: data.cycles_attempted,
+      time: new Date(data.server_ts*1000).toLocaleTimeString('en-GB', {hour12:false}) ,
+    });
+    if (exceptions.length > 24) exceptions = exceptions.slice(0, 24);
+    renderExceptions(); renderKPIs();
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('#filter-chips .chip'), function(chip){
+    chip.addEventListener('click', function(){
+      activeFilter = chip.getAttribute('data-f');
+      Array.prototype.forEach.call(document.querySelectorAll('#filter-chips .chip'), function(c){ c.classList.remove('active'); });
+      chip.classList.add('active');
+      renderLedger();
+    });
+  });
+
+  function setConnState(state){
+    var dot = document.getElementById('live-dot'), label = document.getElementById('live-label'), sub = document.getElementById('sub-line');
+    dot.className = 'live-dot ' + (state==='open' ? 'on' : state==='error' ? 'off' : '');
+    label.textContent = state==='open' ? 'LIVE' : state==='error' ? 'DISCONNECTED' : 'CONNECTING';
+    sub.textContent = 'hmi02_dashboard · ' + (state==='open' ? 'streaming /events' : state==='error' ? 'reconnecting…' : 'connecting…');
+  }
+
+  var es = new EventSource('/events');
+  es.onopen = function(){ setConnState('open'); };
+  es.onerror = function(){ setConnState('error'); };
+  es.onmessage = function(ev){
+    var data;
+    try { data = JSON.parse(ev.data); } catch(e){ return; }
+    if (data.kind === 'result') onResult(data);
+    else if (data.kind === 'alert') onAlert(data);
+  };
+  setConnState('connecting');
+  setInterval(renderKPIs, 5000);
+})();
+</script>
+</body>
+</html>

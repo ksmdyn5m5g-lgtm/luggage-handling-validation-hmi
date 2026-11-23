@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="page">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:oklch(0.97 0.003 260); }
+  a { color:oklch(0.55 0.13 250); text-decoration:none; }
+  a:hover { color:oklch(0.45 0.13 250); }
+  @keyframes pulse { 0%{opacity:1} 50%{opacity:0.25} 100%{opacity:1} }
+  @media (prefers-reduced-motion: reduce) { .twin-marker, .twin-marker * { transition: none !important; } }
+</style>
+</helmet>
+
+<sc-if value="{{ isSimple }}" hint-placeholder-val="{{ true }}">
+<div style="min-height:100vh;min-width:1180px;background:oklch(0.98 0.002 260);font-family:'IBM Plex Sans',Helvetica,sans-serif;color:oklch(0.22 0.01 260);padding:0 0 56px">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:18px 40px;border-bottom:1px solid oklch(0.92 0.004 260);position:sticky;top:0;z-index:5;background:oklch(0.98 0.002 260)">
+    <div style="display:flex;align-items:center;gap:13px">
+      <div style="width:22px;height:22px;border-radius:5px;background:oklch(0.55 0.13 250)"></div>
+      <div style="font-size:15px;font-weight:600;letter-spacing:-0.015em">Luggage Handling System</div>
+      <div style="font-size:12px;color:oklch(0.6 0.01 260)">Terminal 2 · South line</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:18px">
+      <a href="/popup" target="_blank" rel="noopener" style="font-size:12px;font-weight:500">Live zone view ↗</a>
+      <a href="/validation" target="_blank" rel="noopener" style="font-size:12px;font-weight:500">Validation console ↗</a>
+      <div style="display:flex;gap:0;border:1px solid oklch(0.9 0.005 260);border-radius:5px;overflow:hidden">
+        <div onClick="{{ showSimple }}" style="font-size:11px;font-weight:500;letter-spacing:0.03em;padding:6px 14px;cursor:pointer;color:oklch(0.99 0.002 260);background:oklch(0.55 0.13 250)">OVERVIEW</div>
+        <div onClick="{{ showDetailed }}" style="font-size:11px;font-weight:500;letter-spacing:0.03em;padding:6px 14px;cursor:pointer;border-left:1px solid oklch(0.9 0.005 260);color:oklch(0.45 0.02 260)" style-hover="background:oklch(0.955 0.003 260)">ENGINEERING</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onClick="{{ toggleLive }}">
+        <div style="width:7px;height:7px;border-radius:50%;background:oklch(0.55 0.13 145);animation:pulse 1.6s infinite"></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;color:oklch(0.45 0.02 260)">{{ liveLabel }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:44px 40px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:0">
+    <sc-for list="{{ bigStats }}" as="k" hint-placeholder-count="3">
+      <div style="display:flex;flex-direction:column;gap:10px;padding:0 34px;border-left:1px solid oklch(0.92 0.004 260)">
+        <div style="font-size:11px;letter-spacing:0.09em;text-transform:uppercase;color:oklch(0.58 0.01 260)">{{ k.label }}</div>
+        <div style="display:flex;align-items:baseline;gap:8px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:46px;font-weight:600;letter-spacing:-0.03em;line-height:1;color:{{ k.color }}">{{ k.value }}</div>
+          <div style="font-size:13px;color:oklch(0.58 0.01 260)">{{ k.unit }}</div>
+        </div>
+        <div style="font-size:12.5px;line-height:1.5;color:oklch(0.5 0.01 260);max-width:250px;text-wrap:pretty">{{ k.note }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="padding:48px 40px 0">
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:oklch(0.58 0.01 260);margin-bottom:20px">Line status</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:32px">
+      <sc-for list="{{ simpleStages }}" as="s" hint-placeholder-count="5">
+        <div style="display:flex;flex-direction:column;gap:11px">
+          <div style="display:flex;align-items:center;gap:9px">
+            <div style="width:8px;height:8px;border-radius:50%;background:{{ s.dot }}"></div>
+            <div style="font-size:14px;font-weight:600;letter-spacing:-0.012em">{{ s.name }}</div>
+          </div>
+          <div style="height:3px;border-radius:2px;background:oklch(0.93 0.004 260);overflow:hidden">
+            <div style="height:100%;width:{{ s.health }}%;background:{{ s.dot }}"></div>
+          </div>
+          <div style="font-size:12px;line-height:1.45;color:oklch(0.52 0.01 260)">{{ s.status }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="padding:48px 40px 0">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:oklch(0.58 0.01 260)">Where the luggage is</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:oklch(0.55 0.01 260)">{{ twinSensed }} tracked &nbsp;·&nbsp; {{ twinPredicted }} estimated</div>
+    </div>
+    <div style="position:relative;height:104px;border-radius:6px;background:oklch(0.955 0.003 260);overflow:hidden">
+      <div style="position:absolute;left:83%;top:0;bottom:0;width:17%;background:oklch(0.94 0.026 250)"></div>
+      <div style="position:absolute;left:46%;top:0;bottom:0;width:19.5%;background:oklch(0.94 0.026 250)"></div>
+      <div style="position:absolute;left:83.9%;top:10px;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:oklch(0.48 0.1 250)">ZONE 1</div>
+      <div style="position:absolute;left:46.9%;top:10px;font-size:10.5px;font-weight:600;letter-spacing:0.07em;color:oklch(0.48 0.1 250)">ZONE 2</div>
+      <div style="position:absolute;left:0;right:0;top:53px;height:1px;background:oklch(0.89 0.005 260)"></div>
+      <sc-for list="{{ twin }}" as="b" hint-placeholder-count="6">
+        <div style="position:absolute;top:36px;left:{{ b.lx }}%;transform:translateX(-50%);width:26px;height:18px;border-radius:3px;background:{{ b.lightFill }};border:1px {{ b.lightStroke }};opacity:{{ b.opacity }}"></div>
+      </sc-for>
+    </div>
+    <div style="margin-top:14px;font-size:12.5px;line-height:1.5;color:oklch(0.52 0.01 260);max-width:720px;text-wrap:pretty">Solid means per04 is tracking the luggage in Zone 1 right now. Faded means per07 registered it at Zone 1 and it has not been confirmed at Zone 2 yet; its position is estimated from the time since Zone 1 against the 60–90 s transit window.</div>
+  </div>
+
+  <div style="padding:48px 40px 0;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:44px;align-items:start">
+    <div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:oklch(0.58 0.01 260)">Needs attention</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:oklch(0.55 0.01 260)">{{ alertCount }} open</div>
+      </div>
+      <sc-for list="{{ alerts }}" as="a" hint-placeholder-count="4">
+        <div style="display:grid;grid-template-columns:10px minmax(0,1fr) 92px;gap:16px;align-items:baseline;padding:18px 0;border-bottom:1px solid oklch(0.93 0.004 260)">
+          <div style="width:8px;height:8px;border-radius:50%;background:{{ a.color }};transform:translateY(3px)"></div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="font-size:13.5px;font-weight:600;letter-spacing:-0.01em">{{ a.title }}</div>
+            <div style="font-size:12.5px;line-height:1.5;color:oklch(0.5 0.01 260);text-wrap:pretty">{{ a.text }}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:oklch(0.62 0.01 260)">{{ a.time }}</div>
+            <div style="font-size:10.5px;font-weight:500;letter-spacing:0.05em;color:oklch(0.55 0.01 260)">{{ a.source }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:oklch(0.58 0.01 260)">Throughput</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:oklch(0.55 0.01 260)">{{ historyLabel }}</div>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:10px;height:150px;padding-top:22px">
+        <sc-for list="{{ hours }}" as="h" hint-placeholder-count="8">
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:9px;height:100%">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:{{ h.labelColor }}">{{ h.peakLabel }}</div>
+            <div style="width:100%;height:{{ h.h }}px;border-radius:3px 3px 0 0;background:{{ h.color }}"></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:10px;padding-top:9px;border-top:1px solid oklch(0.93 0.004 260)">
+        <sc-for list="{{ hours }}" as="h" hint-placeholder-count="8">
+          <div style="flex:1;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:oklch(0.62 0.01 260)">{{ h.label }}</div>
+        </sc-for>
+      </div>
+      <div style="margin-top:18px;font-size:12.5px;line-height:1.5;color:oklch(0.5 0.01 260);text-wrap:pretty">{{ peakSentence }}</div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDetailed }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;min-width:1380px;background:oklch(0.18 0.012 265);font-family:'IBM Plex Sans',Helvetica,sans-serif;color:oklch(0.94 0.006 265);padding:0 0 44px">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px 28px;background:oklch(0.225 0.014 265);border-bottom:1px solid oklch(0.40 0.016 265);position:sticky;top:0;z-index:5">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:26px;height:26px;border-radius:5px;background:oklch(0.70 0.14 250)"></div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:17px;font-weight:600;letter-spacing:-0.01em">Luggage Handling · Stream Console</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:oklch(0.81 0.012 265)">{{ feedLine }}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:28px">
+      <div style="display:flex;flex-direction:column;gap:2px;text-align:right">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:14.5px;font-weight:600">{{ kpiThroughput }} <span style="font-size:12px;color:oklch(0.81 0.012 265)">bags/min</span></div>
+        <div style="font-size:12px;color:oklch(0.81 0.012 265);text-transform:uppercase;letter-spacing:0.08em">Throughput</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px;text-align:right">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:14.5px;font-weight:600">{{ kpiRead }} <span style="font-size:12px;color:oklch(0.81 0.012 265)">%</span></div>
+        <div style="font-size:12px;color:oklch(0.81 0.012 265);text-transform:uppercase;letter-spacing:0.08em">Identified</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px;text-align:right">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:14.5px;font-weight:600;color:oklch(0.76 0.18 25)">{{ kpiExceptions }}</div>
+        <div style="font-size:12px;color:oklch(0.81 0.012 265);text-transform:uppercase;letter-spacing:0.08em">Open errors</div>
+      </div>
+      <a href="/popup" target="_blank" rel="noopener" style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.04em;color:oklch(0.86 0.10 250)">ZONE VIEW ↗</a>
+      <a href="/validation" target="_blank" rel="noopener" style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.04em;color:oklch(0.86 0.10 250)">VALIDATION ↗</a>
+      <div style="display:flex;gap:0;border:1px solid oklch(0.40 0.016 265);border-radius:4px;overflow:hidden">
+        <div onClick="{{ showSimple }}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;letter-spacing:0.04em;padding:6px 13px;cursor:pointer;color:oklch(0.89 0.012 265)" style-hover="background:oklch(0.26 0.014 265)">OVERVIEW</div>
+        <div onClick="{{ showDetailed }}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;letter-spacing:0.04em;padding:6px 13px;cursor:pointer;border-left:1px solid oklch(0.40 0.016 265);color:oklch(0.16 0.012 265);background:oklch(0.70 0.14 250)">ENGINEERING</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid oklch(0.40 0.016 265);border-radius:4px;cursor:pointer" onClick="{{ toggleLive }}" style-hover="background:oklch(0.26 0.014 265)">
+        <div style="width:9px;height:9px;border-radius:50%;background:oklch(0.75 0.15 152);animation:pulse 1.6s infinite"></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">{{ liveLabel }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:22px 28px 0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:oklch(0.81 0.012 265)">Pipeline · consumed streams</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:oklch(0.81 0.012 265)">window 60s</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">
+
+      <div style="background:oklch(0.225 0.014 265);border:1px solid oklch(0.38 0.015 265);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:oklch(0.80 0.012 265)">STAGE 01</div>
+            <div style="font-size:15.5px;font-weight:600;letter-spacing:-0.01em">Detection</div>
+          </div>
+          <div style="width:12px;height:12px;border-radius:50%;background:{{ detDot }}"></div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:oklch(0.91 0.03 250);background:oklch(0.16 0.012 265);border-radius:3px;padding:5px 7px">{{ detKey }}</div>
+        <div style="font-size:12.5px;line-height:1.5;color:oklch(0.86 0.012 265)">{{ detBlurb }}</div>
+        <div style="display:flex;gap:3px;align-items:flex-end;height:22px">
+          <sc-for list="{{ bits }}" as="b" hint-placeholder-count="18">
+            <div style="flex:1;height:{{ b.h }}px;border-radius:1px;background:{{ b.c }}"></div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px solid oklch(0.36 0.014 265);padding-top:10px">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;font-weight:600;color:oklch(0.83 0.15 152)">{{ beamNow }}</div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.78 0.012 265)">beam</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;font-weight:600">{{ edgeRate }}</div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.78 0.012 265)">edges 60s</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;font-weight:600">{{ detectAge }}</div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.78 0.012 265)">last entry</div>
+          </div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:oklch(0.75 0.012 265)">last-id {{ detectLastId }}</div>
+      </div>
+
+      <sc-for list="{{ streams }}" as="s" hint-placeholder-count="4">
+        <div style="background:oklch(0.225 0.014 265);border:1px solid oklch(0.38 0.015 265);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:oklch(0.80 0.012 265)">STAGE {{ s.idx }}</div>
+              <div style="font-size:15.5px;font-weight:600;letter-spacing:-0.01em">{{ s.name }}</div>
+            </div>
+            <div style="width:12px;height:12px;border-radius:50%;background:{{ s.dot }}"></div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:oklch(0.91 0.03 250);background:oklch(0.16 0.012 265);border-radius:3px;padding:5px 7px">{{ s.key }}</div>
+          <div style="font-size:12.5px;line-height:1.5;color:oklch(0.86 0.012 265)">{{ s.blurb }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.6;color:oklch(0.81 0.012 265);background:oklch(0.16 0.012 265);border-radius:3px;padding:7px 8px;word-break:break-all">{{ s.sample }}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px solid oklch(0.36 0.014 265);padding-top:10px">
+            <sc-for list="{{ s.mets }}" as="m" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;font-weight:600">{{ m.v }}</div>
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.78 0.012 265)">{{ m.l }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:oklch(0.75 0.012 265)">last-id {{ s.lastId }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="padding:22px 28px 0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:oklch(0.81 0.012 265)">Conveyor line · layout</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:oklch(0.81 0.012 265)">placeholder · owner: line engineering</div>
+    </div>
+    <div style="background:oklch(0.225 0.014 265);border:1px solid oklch(0.38 0.015 265);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid oklch(0.36 0.014 265)">
+        <div style="font-size:13.5px;font-weight:600">Belt schematic</div>
+        <div style="display:flex;gap:6px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;padding:4px 9px;border-radius:3px;border:1px solid oklch(0.40 0.016 265);color:oklch(0.89 0.012 265)">T2 · SOUTH</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;padding:4px 9px;border-radius:3px;border:1px solid oklch(0.40 0.016 265);color:oklch(0.89 0.012 265)">rev 0 · unpublished</div>
+        </div>
+      </div>
+      <div style="padding:16px;display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:stretch">
+        <div style="min-height:230px;border:1px dashed oklch(0.46 0.018 265);border-radius:5px;background:oklch(0.20 0.012 265);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:oklch(0.81 0.012 265);letter-spacing:0.04em">DRAWING SLOT — 1:1 SVG</div>
+          <div style="font-size:13px;color:oklch(0.84 0.012 265);max-width:380px;text-align:center;line-height:1.5;text-wrap:pretty">Line schematic drops in here. Draw it as the same rectangular circuit used in the plan view below, so the two read against one another.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.78 0.012 265)">What the drawing should carry</div>
+          <sc-for list="{{ drawingSpec }}" as="d" hint-placeholder-count="5">
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:oklch(0.75 0.012 265);min-width:16px">{{ d.n }}</div>
+              <div style="font-size:12.5px;line-height:1.5;color:oklch(0.86 0.012 265)">{{ d.t }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:22px 28px 0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:oklch(0.83 0.012 265)">Digital twin · luggage in motion</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:oklch(0.83 0.012 265)">{{ twinSensed }} sensed &nbsp;·&nbsp; {{ twinPredicted }} dead-reckoned</div>
+    </div>
+    <div id="twin-panel" style="background:oklch(0.225 0.014 265);border:1px solid oklch(0.38 0.015 265);border-radius:6px;overflow:hidden;{{ twinPanelCss }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 16px;border-bottom:1px solid oklch(0.36 0.014 265)">
+        <div style="display:flex;align-items:baseline;gap:14px;min-width:0">
+          <div style="font-size:15px;font-weight:600;color:oklch(0.97 0.004 265);white-space:nowrap">Plan view · rectangular circuit {{ beltDims }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:oklch(0.85 0.012 265);white-space:nowrap">{{ twinHeaderExtra }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:18px">
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="width:16px;height:11px;border-radius:3px;box-sizing:border-box;background:oklch(0.74 0.15 250);border:2px solid oklch(0.92 0.07 250)"></div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:oklch(0.88 0.012 265)">SENSED</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="width:16px;height:11px;border-radius:3px;box-sizing:border-box;background:oklch(0.44 0.08 80);border:2px dashed oklch(0.86 0.15 80)"></div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:oklch(0.88 0.012 265)">PREDICTED</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="width:16px;height:11px;border-radius:3px;box-sizing:border-box;background:oklch(0.42 0.10 25);border:2px dashed oklch(0.72 0.17 25)"></div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:oklch(0.88 0.012 265)">OVERDUE</div>
+          </div>
+          <button type="button" onClick="{{ toggleTwinFull }}" title="{{ twinFullHint }}" style="display:flex;align-items:center;gap:9px;margin:0;padding:8px 14px;border:0;border-radius:4px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;letter-spacing:0.05em;color:oklch(0.17 0.012 265);background:oklch(0.80 0.11 250)" style-hover="background:oklch(0.88 0.09 250)">
+            <sc-if value="{{ twinNotFull }}" hint-placeholder-val="{{ true }}">
+              <div style="position:relative;width:14px;height:14px;flex:none">
+                <div style="position:absolute;left:0;top:0;width:5px;height:5px;border-left:2px solid currentColor;border-top:2px solid currentColor"></div>
+                <div style="position:absolute;right:0;top:0;width:5px;height:5px;border-right:2px solid currentColor;border-top:2px solid currentColor"></div>
+                <div style="position:absolute;left:0;bottom:0;width:5px;height:5px;border-left:2px solid currentColor;border-bottom:2px solid currentColor"></div>
+                <div style="position:absolute;right:0;bottom:0;width:5px;height:5px;border-right:2px solid currentColor;border-bottom:2px solid currentColor"></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ twinFull }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:20px;line-height:14px;font-weight:500">×</div>
+            </sc-if>
+            <div>{{ twinFullLabel }}</div>
+          </button>
+        </div>
+      </div>
+
+      <div style="{{ twinBodyCss }}">
+        <div style="padding:16px;min-width:0;flex:none">
+          <div style="position:relative;{{ twinCanvasCss }};box-sizing:border-box;border-radius:5px;background:oklch(0.15 0.012 265);border:1px solid oklch(0.34 0.014 265);overflow:hidden">
+
+            <div style="position:absolute;left:8%;width:84%;top:calc(71% - 12px);height:24px;box-sizing:border-box;background:oklch(0.36 0.014 265);border:1px solid oklch(0.50 0.016 265);border-radius:3px"></div>
+            <div style="position:absolute;left:8%;width:84%;top:calc(13% - 12px);height:24px;box-sizing:border-box;background:oklch(0.36 0.014 265);border:1px solid oklch(0.50 0.016 265);border-radius:3px"></div>
+            <div style="position:absolute;top:13%;height:58%;left:calc(8% - 12px);width:24px;box-sizing:border-box;background:oklch(0.36 0.014 265);border:1px solid oklch(0.50 0.016 265);border-radius:3px"></div>
+            <div style="position:absolute;top:13%;height:58%;left:calc(92% - 12px);width:24px;box-sizing:border-box;background:oklch(0.36 0.014 265);border:1px solid oklch(0.50 0.016 265);border-radius:3px"></div>
+
+            <div style="position:absolute;{{ zone1Box }};box-sizing:border-box;border:2px dashed oklch(0.72 0.12 250);border-radius:5px;background:oklch(0.32 0.07 255 / 0.45)"></div>
+            <div style="position:absolute;{{ zone2Box }};box-sizing:border-box;border:2px dashed oklch(0.72 0.12 250);border-radius:5px;background:oklch(0.32 0.07 255 / 0.45)"></div>
+            <div style="position:absolute;{{ zone1LabelAt }};top:3px;display:flex;flex-direction:column;gap:2px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;letter-spacing:0.06em;color:oklch(0.88 0.10 250)">ZONE 1 · WEST RUN</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:oklch(0.82 0.05 250)">ch {{ zone1Range }}</div>
+            </div>
+            <div style="position:absolute;{{ zone2LabelAt }};top:3px;display:flex;flex-direction:column;gap:2px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;letter-spacing:0.06em;color:oklch(0.88 0.10 250)">ZONE 2 · NORTH-EAST CORNER</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:oklch(0.82 0.05 250)">ch {{ zone2Range }}</div>
+            </div>
+
+            <div style="position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:8px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.12em;color:oklch(0.78 0.012 265)">SORTER LOOP</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;letter-spacing:-0.01em;color:oklch(0.90 0.008 265)">{{ beltDims }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:oklch(0.78 0.012 265)">perimeter {{ beltPerimeter }} m &nbsp;·&nbsp; belt 1.30 m wide</div>
+            </div>
+
+            <div style="position:absolute;left:50%;top:calc(13% - 12px);height:24px;transform:translateX(-50%);display:flex;align-items:center;font-size:14px;color:oklch(0.88 0.010 265)">▶</div>
+            <div style="position:absolute;left:50%;top:calc(71% - 12px);height:24px;transform:translateX(-50%);display:flex;align-items:center;font-size:14px;color:oklch(0.88 0.010 265)">◀</div>
+            <div style="position:absolute;left:calc(8% - 12px);width:24px;top:42%;display:flex;justify-content:center;font-size:14px;color:oklch(0.88 0.010 265)">▲</div>
+            <div style="position:absolute;left:calc(92% - 12px);width:24px;top:42%;display:flex;justify-content:center;font-size:14px;color:oklch(0.88 0.010 265)">▼</div>
+
+            <div style="position:absolute;left:calc(8% + 34px);top:calc(71% + 18px);font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:oklch(0.80 0.012 265)">ch 0 m</div>
+            <div style="position:absolute;left:92%;top:calc(71% + 18px);transform:translateX(-100%);font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:oklch(0.80 0.012 265)">{{ runLong }} m</div>
+
+            <div style="position:absolute;left:12%;right:12%;bottom:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+              <sc-for list="{{ carts }}" as="c" hint-placeholder-count="3">
+                <div style="border:1px solid oklch(0.46 0.016 265);border-radius:4px;background:oklch(0.21 0.012 265);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;color:oklch(0.94 0.006 265)">{{ c.id }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:{{ c.color }}">{{ c.fill }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-for list="{{ twinGhosts }}" as="g" hint-placeholder-count="2">
+              <div style="position:absolute;left:{{ g.x }}%;top:{{ g.y }}%;transform:translate(-50%,-50%) rotate({{ g.rot }}deg);width:26px;height:17px;border-radius:3px;border:2px dashed oklch(0.72 0.12 80);opacity:0.6"></div>
+            </sc-for>
+            <sc-for list="{{ twinSlots }}" as="b" hint-placeholder-count="7">
+              <div key="{{ b.key }}" class="twin-marker" style="position:absolute;left:{{ b.x }}%;top:{{ b.y }}%;width:0;height:0;display:{{ b.display }};opacity:{{ b.dOpacity }};transition:left 1s linear,top 1s linear">
+                <div style="position:absolute;left:0;top:0;width:{{ b.w }}px;height:{{ b.h }}px;transform:translate(-50%,-50%) rotate({{ b.rot }}deg);transition:transform .4s ease;box-sizing:border-box;border-radius:4px;background:{{ b.dFill }};border:2px {{ b.dStroke }};box-shadow:0 0 0 2px oklch(0.15 0.012 265)"></div>
+                <div style="position:absolute;left:0;top:0;transform:{{ b.labelShift }};transition:transform .4s ease;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:{{ b.font }}px;font-weight:600;line-height:1.2;padding:2px 6px;border-radius:3px;color:oklch(0.97 0.004 265);background:oklch(0.13 0.01 265 / 0.88);border:1px solid {{ b.labelBorder }}">{{ b.id }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="{{ twinListCss }}">
+          <div style="display:grid;grid-template-columns:minmax(108px,1.2fr) minmax(80px,0.9fr) minmax(80px,0.9fr) minmax(64px,0.7fr) minmax(150px,1.5fr) minmax(86px,0.9fr);column-gap:12px;padding:10px 16px;background:oklch(0.20 0.012 265);border-top:1px solid oklch(0.36 0.014 265);border-bottom:1px solid oklch(0.36 0.014 265);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:oklch(0.83 0.012 265)">
+            <div>Luggage</div><div>Zone</div><div>Position</div><div>Elapsed</div><div>State</div><div>Track</div>
+          </div>
+          <div style="{{ twinRowsCss }}">
+            <sc-for list="{{ twinRows }}" as="b" hint-placeholder-count="7">
+              <div style="display:grid;grid-template-columns:minmax(108px,1.2fr) minmax(80px,0.9fr) minmax(80px,0.9fr) minmax(64px,0.7fr) minmax(150px,1.5fr) minmax(86px,0.9fr);column-gap:12px;padding:11px 16px;border-bottom:1px solid oklch(0.31 0.013 265);font-family:'IBM Plex Mono',monospace;font-size:13px;align-items:center">
+                <div style="font-weight:600;color:oklch(0.97 0.004 265)">{{ b.id }}</div>
+                <div style="font-weight:500;color:{{ b.zoneColor }}">{{ b.zone }}</div>
+                <div style="color:oklch(0.90 0.008 265)">{{ b.pos }}</div>
+                <div style="color:oklch(0.90 0.008 265)">{{ b.speed }}</div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="height:7px;flex:1;min-width:36px;max-width:110px;background:oklch(0.34 0.014 265);border-radius:4px;overflow:hidden">
+                    <div style="height:100%;background:oklch(0.76 0.14 250);width:{{ b.yawPct }}%"></div>
+                  </div>
+                  <div style="font-size:12px;white-space:nowrap;color:oklch(0.86 0.012 265)">{{ b.yawLabel }}</div>
+                </div>
+                <div style="font-size:12px;font-weight:700;letter-spacing:0.04em;color:{{ b.trackColor }}">{{ b.track }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:13px 16px;border-top:1px solid oklch(0.36 0.014 265);font-size:13px;line-height:1.55;color:oklch(0.85 0.012 265)">Outside the two zones there is no sensor coverage. Once per07 registers luggage at Zone 1, its position here is estimated from elapsed time against the transit window. per07 re-identifies it at Zone 2 between <span style="font-family:'IBM Plex Mono',monospace;color:oklch(0.96 0.005 265)">60–90 s</span>; after 3 failed cycles, or no arrival at all, it raises an error alert. Red markers are overdue.</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;padding:22px 28px 0;align-items:start">
+
+    <div style="background:oklch(0.225 0.014 265);border:1px solid oklch(0.38 0.015 265);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid oklch(0.36 0.014 265)">
+        <div style="font-size:13.5px;font-weight:600">Live bag ledger</div>
+        <div style="display:flex;gap:6px">
+          <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4">
+            <div onClick="{{ f.onClick }}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;padding:4px 9px;border-radius:3px;border:1px solid oklch(0.40 0.016 265);cursor:pointer;color:oklch(0.89 0.012 265)" style-hover="background:oklch(0.27 0.014 265)">{{ f.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(104px,124px) minmax(90px,110px) minmax(116px,1fr) minmax(100px,120px) minmax(84px,110px) minmax(72px,96px) minmax(76px,88px);gap:0;padding:9px 16px;background:oklch(0.20 0.012 265);border-bottom:1px solid oklch(0.36 0.014 265);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.80 0.012 265)">
+        <div>Luggage</div><div>Class</div><div>Stage</div><div>L×W×H cm</div><div>Confidence</div><div>Cart</div><div>Verdict</div>
+      </div>
+      <div style="max-height:520px;overflow:auto">
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="10">
+          <div onClick="{{ r.onClick }}" style="display:grid;grid-template-columns:minmax(104px,124px) minmax(90px,110px) minmax(116px,1fr) minmax(100px,120px) minmax(84px,110px) minmax(72px,96px) minmax(76px,88px);gap:0;padding:11px 16px;border-bottom:1px solid oklch(0.32 0.013 265);font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;align-items:center" style-hover="background:oklch(0.26 0.018 258)">
+            <div style="font-weight:600">{{ r.id }}</div>
+            <div style="color:oklch(0.93 0.012 265)">{{ r.dest }}</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="height:7px;flex:1;max-width:120px;background:oklch(0.28 0.014 265);border-radius:2px;overflow:hidden">
+                <div style="height:100%;background:oklch(0.70 0.14 250);width:{{ r.pct }}%"></div>
+              </div>
+              <div style="font-size:12px;color:oklch(0.84 0.012 265)">{{ r.stage }}</div>
+            </div>
+            <div style="color:oklch(0.93 0.010 265)">{{ r.dims }}</div>
+            <div style="color:{{ r.confColor }}">{{ r.conf }}</div>
+            <div style="color:oklch(0.93 0.010 265)">{{ r.cart }}</div>
+            <div style="font-size:11.5px;font-weight:600;letter-spacing:0.04em;color:{{ r.stateColor }}">{{ r.state }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div style="background:oklch(0.225 0.014 265);border:1px solid oklch(0.38 0.015 265);border-radius:6px">
+        <div style="padding:13px 16px;border-bottom:1px solid oklch(0.36 0.014 265);display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:13.5px;font-weight:600">Bag detail</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600">{{ selId }}</div>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <sc-for list="{{ selFacts }}" as="f" hint-placeholder-count="8">
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:oklch(0.78 0.012 265)">{{ f.k }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;font-weight:500;color:{{ f.c }}">{{ f.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="border-top:1px solid oklch(0.36 0.014 265);padding-top:14px;display:flex;flex-direction:column;gap:9px">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.78 0.012 265)">Validation checks</div>
+            <sc-for list="{{ selChecks }}" as="c" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <div style="font-size:13px;color:oklch(0.93 0.012 265)">{{ c.label }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:2px 7px;border-radius:3px;color:{{ c.color }};background:{{ c.bg }}">{{ c.verdict }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="border-top:1px solid oklch(0.36 0.014 265);padding-top:14px;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.78 0.012 265)">Raw stream entry</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;color:oklch(0.91 0.03 250);background:oklch(0.16 0.012 265);border-radius:4px;padding:10px;white-space:pre-wrap;word-break:break-all">{{ selRaw }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:oklch(0.225 0.014 265);border:1px solid oklch(0.38 0.015 265);border-radius:6px;overflow:hidden">
+        <div style="padding:14px 16px;border-bottom:1px solid oklch(0.36 0.014 265);display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="font-size:14.5px;font-weight:700;letter-spacing:-0.01em">Error Management System</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:3px 8px;border-radius:3px;color:oklch(0.76 0.18 25);background:oklch(0.26 0.05 25)">{{ alertCount }} OPEN</div>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ alerts }}" as="a" hint-placeholder-count="4">
+            <div style="padding:13px 16px;border-bottom:1px solid oklch(0.32 0.013 265);display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:9px;height:9px;border-radius:50%;background:{{ a.dColor }}"></div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:{{ a.dColor }}">{{ a.code }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;padding:1px 5px;border-radius:2px;color:oklch(0.88 0.012 265);background:oklch(0.28 0.014 265)">{{ a.sev }}</div>
+                </div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:oklch(0.76 0.012 265)">{{ a.time }}</div>
+              </div>
+              <div style="font-size:13px;line-height:1.45;color:oklch(0.93 0.010 265)">{{ a.text }}</div>
+              <div style="display:flex;gap:14px;padding-top:2px">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.05em;color:oklch(0.81 0.012 265)">{{ a.source }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:22px 28px 0">
+    <div style="font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:oklch(0.81 0.012 265);margin-bottom:10px">Stream topology</div>
+    <div style="background:oklch(0.225 0.014 265);border:1px solid oklch(0.38 0.015 265);border-radius:6px;padding:22px 24px">
+      <div style="display:grid;grid-template-columns:1fr 34px 1fr 34px 1fr 34px 1fr 34px 1fr;align-items:center;gap:0">
+        <sc-for list="{{ topo }}" as="n" hint-placeholder-count="9">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:{{ n.size }}px;font-weight:600;letter-spacing:0.04em;color:{{ n.color }};border:1px {{ n.border }};border-radius:4px;padding:{{ n.pad }};background:{{ n.bg }};white-space:nowrap">{{ n.label }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:oklch(0.75 0.012 265);white-space:nowrap">{{ n.sub }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:26px;padding-top:20px;border-top:1px solid oklch(0.36 0.014 265)">
+        <sc-for list="{{ notes }}" as="n" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:12.5px;font-weight:600;letter-spacing:-0.005em">{{ n.t }}</div>
+            <div style="font-size:12.5px;line-height:1.55;color:oklch(0.84 0.012 265)">{{ n.d }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;overview&quot;,&quot;options&quot;:[&quot;overview&quot;,&quot;engineering&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;View&quot;},&quot;beltLength&quot;:{&quot;editor&quot;:&quot;float&quot;,&quot;default&quot;:24.6,&quot;min&quot;:6,&quot;max&quot;:60,&quot;step&quot;:0.01,&quot;unit&quot;:&quot;m&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Conveyor&quot;},&quot;beltWidth&quot;:{&quot;editor&quot;:&quot;float&quot;,&quot;default&quot;:6.79,&quot;min&quot;:3,&quot;max&quot;:30,&quot;step&quot;:0.01,&quot;unit&quot;:&quot;m&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Conveyor&quot;},&quot;expectedTransit&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:90,&quot;min&quot;:10,&quot;max&quot;:180,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Validation&quot;}}">
+// Live logic: every value below comes from /api/snapshot, which hmi02_dashboard
+// serves from the snapshot hmi01_configuration builds out of the real AG4NBA
+// streams. Nothing is simulated. When a
+// producer has stopped, the page says so (STALE + age) instead of inventing data.
+const GREEN = "oklch(0.55 0.13 145)", AMBER = "oklch(0.55 0.13 70)", RED = "oklch(0.55 0.13 25)";
+const DG = "oklch(0.75 0.15 152)", DA = "oklch(0.80 0.14 80)", DR = "oklch(0.72 0.17 25)";
+const DINK = "oklch(0.88 0.010 265)", DMUTE = "oklch(0.76 0.012 265)", LMUTE = "oklch(0.62 0.01 260)";
+// hmi01 publishes a new snapshot once a second. Asking slightly more often lets each request
+// drift towards just after a publish; an unchanged snapshot means the next one is moments away.
+const POLL_MS = 950, RETRY_MS = 150;
+// Belt chainage (0-40 around the loop) of the two zones, shared by the plan view and zoneOf().
+const Z1_START = 33.2, Z1_END = 40, Z2_START = 18.4, Z2_END = 26.2;
+// Estimated markers are drawn this far ahead of the snapshot: about its age plus the one-second
+// glide, so a marker arrives where the bag is now rather than where it was.
+const LEAD_S = 1.5;
+// A tracked bag per04 briefly loses (it often does at the Zone 1 exit) stays on the plan this long instead of blinking.
+const HOLD_MS = 3000;
+// Position in Zone 1 (0 entry - 1 exit) for a per04 track that has a zone but no route progress.
+const ZONE_PROGRESS = { entry_x: 0.15, transfer: 0.4, tracking_y: 0.7, exit: 1 };
+const ROUTE_ZONES = new Set(Object.keys(ZONE_PROGRESS));
+
+function fmtAge(s) {
+  if (s == null) return "no data";
+  if (s < 90) return Math.round(s) + "s ago";
+  if (s < 5400) return Math.round(s / 60) + "m ago";
+  if (s < 172800) return (s / 3600).toFixed(1) + "h ago";
+  return (s / 86400).toFixed(1) + "d ago";
+}
+function clock(ts) { return ts ? new Date(ts * 1000).toTimeString().slice(0, 8) : "—"; }
+// Alert times carry the date once they are old enough to be from another day.
+function when(ts) {
+  if (!ts) return "—";
+  const d = new Date(ts * 1000);
+  return (Date.now() / 1000 - ts) < 43200 ? clock(ts)
+    : d.toLocaleDateString(undefined, { day: "2-digit", month: "short" }) + " " + clock(ts).slice(0, 5);
+}
+function fixed(v, d) { const n = parseFloat(v); return isFinite(n) ? n.toFixed(d) : "—"; }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function zoneOf(s) {
+  if (s >= Z1_START && s <= Z1_END) return "ZONE 1";
+  if (s >= Z2_START && s <= Z2_END) return "ZONE 2";
+  return "BLIND";
+}
+// A per04 track's name: its luggage_id once enrolled, else its tracker id, else the id per04's
+// motion detector gave a detection no tracker has picked up yet.
+function trackName(t) {
+  if (t.luggage_id) return t.luggage_id;
+  if (t.tracker_id != null) return "trk#" + t.tracker_id;
+  if (t.motion_id != null) return "det#" + t.motion_id;
+  return null;
+}
+function beltXY(s) {
+  const x0 = 8, x1 = 92, y0 = 13, y1 = 71;
+  s = ((s % 40) + 40) % 40;
+  if (s < 14) return { x: x0 + (s / 14) * (x1 - x0), y: y1, rot: 180 };
+  if (s < 20) return { x: x1, y: y1 - ((s - 14) / 6) * (y1 - y0), rot: 90 };
+  if (s < 34) return { x: x1 - ((s - 20) / 14) * (x1 - x0), y: y0, rot: 0 };
+  return { x: x0, y: y0 + ((s - 34) / 6) * (y1 - y0), rot: -90 };
+}
+// A validation verdict, as the three states the design's colours already encode.
+function verdictOf(status) {
+  if (status === "MATCHED") return "PASS";
+  if (status === "NOT_MATCHED") return "HOLD";
+  if (status) return "FAIL";
+  return "PENDING";
+}
+
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { snap: null, err: null, live: true, selIdx: 0, filter: "ALL", twinFull: false,
+                   view: (p.startView === "engineering") ? "detailed" : "simple" };
+  }
+  componentDidMount() {
+    this.poll();
+    // Leaving browser full screen (Esc, or the browser's own control) also closes the full-screen twin.
+    this.onFullscreenChange = () => {
+      if (!(document.fullscreenElement || document.webkitFullscreenElement) && this.state.twinFull) this.setState({ twinFull: false });
+    };
+    this.onKeyDown = (e) => { if (e.key === "Escape" && this.state.twinFull) this.setState({ twinFull: false }); };
+    document.addEventListener("fullscreenchange", this.onFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", this.onFullscreenChange);
+    document.addEventListener("keydown", this.onKeyDown);
+  }
+  componentWillUnmount() {
+    clearTimeout(this.timer);
+    document.removeEventListener("fullscreenchange", this.onFullscreenChange);
+    document.removeEventListener("webkitfullscreenchange", this.onFullscreenChange);
+    document.removeEventListener("keydown", this.onKeyDown);
+  }
+  // The twin fills the window by itself; where the browser allows it, real full screen also hides the browser bars.
+  toggleTwinFull() {
+    const doc = document, root = doc.documentElement;
+    const inFullscreen = doc.fullscreenElement || doc.webkitFullscreenElement;
+    if (this.state.twinFull) {
+      this.setState({ twinFull: false });
+      if (inFullscreen) (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+      return;
+    }
+    this.setState({ twinFull: true });
+    const request = root.requestFullscreen || root.webkitRequestFullscreen;
+    if (request && !inFullscreen) {
+      try { Promise.resolve(request.call(root)).catch(() => {}); } catch (e) { /* the window-filling view still works */ }
+    }
+  }
+  poll() {
+    clearTimeout(this.timer);
+    const started = Date.now();
+    const again = (ms, fromStart) => {
+      this.timer = setTimeout(() => this.poll(), Math.max(0, fromStart ? ms - (Date.now() - started) : ms));
+    };
+    if (!this.state.live) { again(POLL_MS, true); return; }
+    fetch("/api/snapshot", { cache: "no-store" })
+      .then(r => {
+        // Ages are measured on the server's clock (its Date header, whole seconds), so a viewer
+        // whose computer clock is wrong still sees how old the data really is.
+        const serverMs = Date.parse((r.headers && r.headers.get("Date")) || "");
+        if (!isNaN(serverMs)) this.clockOffset = (serverMs + 500 - Date.now()) / 1000;
+        return r.status === 503 ? null : r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status));
+      })
+      .then(snap => {
+        if (!snap) { this.setState({ err: "waiting for hmi01_configuration" }); again(POLL_MS, true); return; }
+        const prev = this.state.snap;
+        if (prev && !this.state.err && snap.generated_at === prev.generated_at) {
+          this.repeats = (this.repeats || 0) + 1;   // a stalled hmi01 must not turn this into rapid polling
+          again(this.repeats <= 3 ? RETRY_MS : POLL_MS, this.repeats > 3);
+          return;
+        }
+        this.repeats = 0;
+        this.setState({ snap, err: null });
+        again(POLL_MS, true);
+      })
+      .catch(e => {
+        this.setState({ err: "not connected to hmi02_dashboard (" + (e.message || e) + ")" });
+        again(POLL_MS, true);
+      });
+  }
+  // Each bag keeps one slot, and so one element, while it is on the plan, so its marker glides from
+  // position to position. A freed slot is keyed afresh, so no marker glides out of another bag's place.
+  twinSlotsFor(items) {
+    const slots = this.twinSlots || (this.twinSlots = []);
+    const present = new Set(items.map(x => x.key));
+    for (let i = 0; i < slots.length; i++) if (slots[i] !== null && !present.has(slots[i])) slots[i] = null;
+    items.forEach(x => {
+      let i = slots.indexOf(x.key);
+      if (i < 0) {
+        i = slots.indexOf(null);
+        if (i < 0) { i = slots.length; slots.push(null); }
+        slots[i] = x.key;
+      }
+      x.slot = i;
+    });
+    while (slots.length && slots[slots.length - 1] === null) slots.pop();
+    const byKey = new Map(items.map(x => [x.key, x]));
+    return slots.map(k => (k === null ? null : byKey.get(k)));
+  }
+
+  renderVals() {
+    const snap = this.state.snap || { sections: {} };
+    const sec = snap.sections || {};
+    const now = Date.now() / 1000 + (this.clockOffset || 0);
+    const simple = this.state.view === "simple";
+    const full = !!this.state.twinFull;
+    const win = snap.transit_window_s || [60, 90];
+    const beltLen = this.props.beltLength || 24.6, beltWid = this.props.beltWidth || 6.79;
+    const perim = (beltLen + beltWid) * 2;
+    const toM = (s) => (s / 40) * perim;
+
+    const S = {};
+    (sec.streams || []).forEach(r => { S[r.role] = r; });
+    const st = (role) => S[role] || { state: "absent", age_s: null, key: role, last_id: null, length: 0 };
+    const darkDot = (role) => { const r = st(role); return r.state === "live" ? DG : r.state === "absent" ? DMUTE : (r.age_s < 3600 ? DA : DR); };
+    const lightDot = (role) => { const r = st(role); return r.state === "live" ? GREEN : r.state === "absent" ? LMUTE : (r.age_s < 3600 ? AMBER : RED); };
+    const health = (role) => { const r = st(role); return r.state === "live" ? 100 : r.state === "absent" ? 0 : 35; };
+    const stateText = (role, liveText) => { const r = st(role); return r.state === "live" ? liveText : r.state === "absent" ? "No output yet" : "Stopped · last output " + fmtAge(r.age_s); };
+
+    const det = sec.detection || {}, dim = sec.dimension || {}, trk = sec.tracking || {};
+    const val = sec.validation || {}, opt = sec.optimization || {}, hist = sec.history || [];
+    // per04's last message stays in Redis after per04 stops. Only draw its
+    // tracks as "sensed" while that stream is live - otherwise the belt view
+    // would show luggage a sensor saw hours ago as if it were there now.
+    const trackingLive = st("tracking").state === "live";
+    const tracks = trackingLive ? (trk.tracks || []) : [], inFlight = val.in_flight || [], results = val.results || [];
+    const liveCount = (sec.streams || []).filter(r => r.state === "live").length;
+    const idPct = trk.distinct_recent ? Math.round((trk.enrolled_recent / trk.distinct_recent) * 100) : null;
+
+    const alerts = (sec.alerts || []).map(a => {
+      const crit = a.severity === "CRITICAL";
+      return {
+        code: a.code || "—", sev: a.severity, source: a.source === "per07" ? "per07 · error:alerts" : "ems02 · inspection",
+        title: a.source === "per07" ? "Luggage not re-identified at Zone 2" : "Manual inspection · " + (a.code || "no code"),
+        text: (a.baggage_id || "unknown bag") + " — " + a.text,
+        color: crit ? RED : AMBER, dColor: crit ? DR : DA, time: when(a.ts)
+      };
+    });
+
+    // Throughput: hmi01 accumulates 1-minute buckets from its own start.
+    const n = hist.length, per = Math.max(1, Math.ceil(n / 8)), bars = [];
+    for (let i = Math.max(0, n - per * 8); i < n; i += per) {
+      const chunk = hist.slice(i, i + per);
+      bars.push({ v: chunk.reduce((a, b) => a + b[1], 0), ts: chunk[0][0] * 60 });
+    }
+    const peak = bars.reduce((m, b) => Math.max(m, b.v), 0);
+    const peakBar = bars.find(b => b.v === peak);
+
+    // One luggage ledger folded from per07 results, bags in flight and per04 tracks.
+    let rows = [];
+    results.forEach(r => rows.push({ kind: "result", id: r.baggage_id, dest: "—", stage: "VALIDATED", pct: 100, dims: "—",
+      conf: r.final_score ? fixed(r.final_score, 3) : "—", confN: parseFloat(r.final_score), cart: "—",
+      state: verdictOf(r.status), src: r }));
+    inFlight.forEach(b => rows.push({ kind: "flight", id: b.baggage_id, dest: b.class || "—",
+      stage: b.phase === "transit" ? "IN TRANSIT" : b.phase === "window" ? "ZONE 2 WINDOW" : "OVERDUE", pct: 70,
+      dims: b.dims_m ? b.dims_m.map(v => Math.round(v * 100)).join("×") : "—", conf: "—", confN: null, cart: "—",
+      state: b.phase === "overdue" ? "FAIL" : "PENDING", src: b }));
+    tracks.forEach(t => rows.push({ kind: "track", id: trackName(t) || "untracked", dest: t.class || "—",
+      stage: "TRACKING", pct: 35, dims: "—", conf: t.conf ? (t.conf * 100).toFixed(1) + "%" : "—", confN: t.conf,
+      cart: "—", state: t.luggage_id ? "PASS" : "HOLD", src: t }));
+    const f = this.state.filter;
+    if (f === "ERRORS") rows = rows.filter(r => r.state === "FAIL" || r.state === "HOLD");
+    if (f === "IN FLIGHT") rows = rows.filter(r => r.kind === "flight");
+    if (f === "UNENROLLED") rows = rows.filter(r => r.kind === "track" && !r.src.luggage_id);
+    const sel = rows[Math.min(this.state.selIdx, rows.length - 1)] || null;
+    const stateColor = (s) => s === "PASS" ? DG : s === "FAIL" ? DR : s === "HOLD" ? DA : DMUTE;
+
+    // Plan-view positions (chainage 0-40). Sensed bags sit where per04 sees them: its route_progress
+    // runs from 0 at the Zone 1 entry to 1 at the exit. Frames where a bag is outside the route
+    // polygons carry no progress, so the last value is kept, and a bag missing from a frame or two
+    // is held for HOLD_MS. Estimated bags follow per07's elapsed time against the transit window.
+    const memo = this.sensedMemo || (this.sensedMemo = new Map());
+    const nowMs = Date.now();
+    const sensed = new Map();
+    tracks.forEach(t => {
+      const id = trackName(t);
+      const prev = id ? memo.get(id) : null;
+      // Detections off the conveyor route, or with nothing to follow them by, stay off the plan;
+      // the ledger still lists them.
+      if (!id || !(typeof t.progress === "number" || prev || ROUTE_ZONES.has(t.zone))) return;
+      let p = typeof t.progress === "number" ? clamp(t.progress, 0, 1) : null, gen = prev ? prev.gen : 0;
+      if (p == null) p = prev ? prev.p : (ZONE_PROGRESS[t.zone] || 0);
+      else if (prev && p < prev.p) {
+        // Luggage does not run backwards, so a small dip is noise. A large drop means per04 reused
+        // the tracker id for a new bag, which gets a fresh marker instead of sliding back.
+        if (prev.p - p <= 0.15) p = prev.p; else gen += 1;
+      }
+      memo.set(id, { p, t, gen, seen: nowMs });
+      sensed.set(id, { id, p, t, gen });
+    });
+    for (const [id, m] of memo) {
+      if (!trackingLive || nowMs - m.seen > 60000) memo.delete(id);
+      else if (!sensed.has(id) && nowMs - m.seen <= HOLD_MS) sensed.set(id, { id, p: m.p, t: m.t, gen: m.gen });
+    }
+    const z1Len = Z1_END - 0.02 - Z1_START;   // stop short of chainage 40, which is already the south run
+    const predictedPos = (b) => {
+      const el = (b.elapsed_s || 0) + LEAD_S;
+      if (el < win[0]) return Z1_START - (el / win[0]) * (Z1_START - Z2_END);
+      if (el <= win[1]) return Z2_END - clamp((el - win[0]) / (win[1] - win[0]), 0, 1) * (Z2_END - Z2_START);
+      return Z2_START - clamp((el - win[1]) / win[1], 0, 1) * 4.2;   // overdue: carried on down the east run
+    };
+    const twinAll = [];
+    sensed.forEach(({ id, p, t, gen }) => twinAll.push({ key: "s:" + id + (gen ? "#" + gen : ""), id, pos: Z1_START + (1 - p) * z1Len,
+      sensed: true, conf: 1, row: t, label: (t.identity || "—").toUpperCase(), pct: Math.round(p * 100) }));
+    inFlight.forEach(b => twinAll.push({ key: "p:" + b.baggage_id, id: b.baggage_id, pos: predictedPos(b),
+      sensed: false, conf: b.phase === "overdue" ? 0.4 : 0.8, row: b,
+      label: b.phase.toUpperCase(), pct: Math.round(clamp(b.elapsed_s / win[1], 0, 1) * 100) }));
+    const slots = this.twinSlotsFor(twinAll);
+    const twinView = (x) => {
+      const g = beltXY(x.pos);
+      const overdue = !x.sensed && x.row.phase === "overdue";
+      const w = full ? 40 : 30, h = full ? 27 : 20, font = full ? 13.5 : 11;
+      // Label beside the belt: below the north run, above the south run, outside the east and west
+      // runs. Alternate slots use a second lane, so neighbouring bags do not overprint each other.
+      const gap = Math.max(h / 2, 12) + 14, step = ((x.slot || 0) % 2) * (font + 12);
+      const labelShift = g.rot === 0 ? "translate(-50%," + (gap + step) + "px)"
+        : g.rot === 180 ? "translate(-50%,calc(-100% - " + (gap + step) + "px))"
+        : g.rot === 90 ? "translate(calc(-100% - " + gap + "px),calc(-50% + " + step + "px))"
+        : "translate(" + gap + "px,calc(-50% + " + step + "px))";
+      return { key: x.key, display: "block", x: g.x.toFixed(2), y: g.y.toFixed(2), rot: g.rot.toFixed(1),
+        lx: ((x.pos / 40) * 100).toFixed(2), id: x.id, w, h, font, labelShift, dOpacity: x.sensed ? "1" : "0.92",
+        dFill: x.sensed ? "oklch(0.74 0.15 250)" : overdue ? "oklch(0.42 0.10 25)" : "oklch(0.44 0.08 80)",
+        dStroke: x.sensed ? "solid oklch(0.92 0.07 250)" : overdue ? "dashed " + DR : "dashed oklch(0.86 0.15 80)",
+        labelBorder: x.sensed ? "oklch(0.74 0.15 250)" : overdue ? DR : "oklch(0.86 0.15 80)",
+        lightFill: x.sensed ? "oklch(0.62 0.11 250)" : "oklch(0.97 0.02 80)",
+        lightStroke: x.sensed ? "solid oklch(0.5 0.13 250)" : "dashed oklch(0.72 0.13 80)",
+        opacity: x.conf.toFixed(2) };
+    };
+    // Zone outlines follow the same chainage as the markers, so a bag inside a zone is drawn inside it.
+    const zoneBox = (a, b) => {
+      let x0 = 100, x1 = 0, y0 = 100, y1 = 0;
+      for (let c = a; c <= b + 1e-9; c += 0.05) {
+        const g = beltXY(c);
+        x0 = Math.min(x0, g.x); x1 = Math.max(x1, g.x); y0 = Math.min(y0, g.y); y1 = Math.max(y1, g.y);
+      }
+      const at = "left:calc(" + x0.toFixed(2) + "% - 26px)";
+      return { at, css: at + ";top:calc(" + y0.toFixed(2) + "% - 18px);width:calc(" + (x1 - x0).toFixed(2) +
+        "% + 52px);height:calc(" + (y1 - y0).toFixed(2) + "% + 36px)" };
+    };
+    const z1Box = zoneBox(Z1_START, Z1_END - 0.02), z2Box = zoneBox(Z2_START, Z2_END);
+    // The loop is drawn across 84% of the width and 58% of the height; this canvas ratio keeps it to scale.
+    const ratio = ((beltLen / beltWid) / (0.84 / 0.58)).toFixed(3);
+
+    const firstTrack = tracks[0];
+    const lastRes = results[0];
+    const plan = opt.plan;
+    const selSrc = sel ? sel.src : null;
+
+    return {
+      isSimple: simple, isDetailed: !simple,
+      showSimple: () => this.setState({ view: "simple" }),
+      showDetailed: () => this.setState({ view: "detailed" }),
+      liveLabel: !this.state.live ? "PAUSED" : this.state.err ? "OFFLINE" : "LIVE · " + liveCount + "/" + (sec.streams || []).length + " STREAMS",
+      toggleLive: () => this.setState(s => ({ live: !s.live })),
+      feedLine: this.state.err ? this.state.err + " — see hmi02_dashboard/README.md"
+        : "hmi01 snapshot · read-only · " + liveCount + " of " + (sec.streams || []).length + " streams live · updated " + fmtAge(snap.generated_at ? Math.max(0, now - snap.generated_at) : null),
+
+      bigStats: [
+        { label: "Bags detected", value: det.edges_last_60s == null ? "—" : det.edges_last_60s, unit: "last min", color: "oklch(0.22 0.01 260)",
+          note: "Rising edges from per01 presence detection. " + stateText("detection", "Detection is live.") },
+        { label: "Identified", value: idPct == null ? "—" : idPct, unit: "%", color: idPct == null ? LMUTE : idPct < 50 ? RED : idPct < 90 ? AMBER : GREEN,
+          note: (trk.enrolled_recent || 0) + " of " + (trk.distinct_recent || 0) + " recent per04 tracks have a luggage_id. per07 can only validate identified luggage." },
+        { label: "Needs attention", value: alerts.length, unit: "open", color: alerts.length ? RED : "oklch(0.22 0.01 260)",
+          note: "per07 error alerts plus EMS manual-inspection items." }
+      ],
+      simpleStages: [
+        { name: "Detection", role: "detection", live: "per01 reporting" },
+        { name: "Dimension", role: "dimension", live: "per02 measuring" },
+        { name: "Tracking", role: "tracking", live: (trk.enrolled_recent || 0) + " enrolled" },
+        { name: "Optimization", role: "cart_plan", live: "Cart plan current" },
+        { name: "Validation", role: "cam2", live: inFlight.length + " in flight" }
+      ].map(s => ({ name: s.name, health: health(s.role), dot: lightDot(s.role), status: stateText(s.role, s.live) })),
+
+      twinSensed: twinAll.filter(x => x.sensed).length,
+      twinPredicted: twinAll.filter(x => !x.sensed).length,
+      twinFull: full, twinNotFull: !full,
+      toggleTwinFull: () => this.toggleTwinFull(),
+      twinFullLabel: full ? "EXIT FULL SCREEN" : "FULL SCREEN",
+      twinFullHint: full ? "Back to the Engineering page (Esc)" : "Show the digital twin on the whole screen",
+      twinHeaderExtra: full ? twinAll.filter(x => x.sensed).length + " sensed · " + twinAll.filter(x => !x.sensed).length + " predicted" : "",
+      twinPanelCss: full ? "position:fixed;inset:0;z-index:60;border:0;border-radius:0;overflow:auto;display:flex;flex-direction:column" : "",
+      twinBodyCss: full ? "flex:1;min-height:0;display:flex;flex-direction:column" : "",
+      twinListCss: full ? "flex:1;min-height:0;display:flex;flex-direction:column" : "",
+      twinRowsCss: full ? "flex:1;min-height:0;overflow:auto" : "max-height:240px;overflow:auto",
+      twinCanvasCss: full ? "height:min(calc(100vh - 360px), calc((100vw - 34px) / " + ratio + "));aspect-ratio:" + ratio + ";max-width:100%;margin:0 auto"
+        : "width:100%;aspect-ratio:" + ratio,
+      zone1Box: z1Box.css, zone2Box: z2Box.css, zone1LabelAt: z1Box.at, zone2LabelAt: z2Box.at,
+      twin: twinAll.map(twinView),
+      twinSlots: slots.map((x, i) => x ? twinView(x) : { key: "free-" + i, display: "none", x: "0", y: "0", rot: "0",
+        w: 0, h: 0, font: 11, labelShift: "none", dOpacity: "0", dFill: "transparent", dStroke: "solid transparent",
+        labelBorder: "transparent", id: "" }),
+      twinGhosts: [],
+      twinRows: twinAll.slice().sort((a, b) => b.pos - a.pos).map(x => ({
+        id: x.id, zone: zoneOf(x.pos), zoneColor: x.sensed ? "oklch(0.88 0.07 250)" : DMUTE,
+        pos: toM(x.pos).toFixed(2) + " m", speed: x.sensed ? "—" : x.row.elapsed_s + " s",
+        yawPct: x.pct, yawLabel: x.label, track: x.sensed ? "SENSED" : "ESTIMATED",
+        trackColor: x.sensed ? DG : x.row.phase === "overdue" ? DR : DA })),
+
+      alertCount: alerts.length, alerts,
+      historyLabel: n ? "last " + n + " min (since hmi01 started)" : "no history yet",
+      hours: bars.map(b => ({ h: peak ? Math.max(3, Math.round((b.v / peak) * 118)) : 3, label: clock(b.ts).slice(0, 5),
+        peakLabel: b.v === peak && peak ? String(b.v) : "", labelColor: "oklch(0.4 0.01 260)",
+        color: b.v === peak && peak ? "oklch(0.55 0.13 250)" : "oklch(0.86 0.012 260)" })),
+      peakSentence: peak ? "Peak was " + peak + " detections in " + per + " min at " + clock(peakBar.ts).slice(0, 5) + "."
+        : "No detections recorded since hmi01 started.",
+
+      kpiThroughput: det.edges_last_60s == null ? "—" : det.edges_last_60s,
+      kpiRead: idPct == null ? "—" : idPct,
+      kpiExceptions: alerts.length,
+
+      bits: (det.recent && det.recent.length ? det.recent : new Array(18).fill(0)).map(v => ({ h: v ? 20 : 5, c: v ? DG : "oklch(0.42 0.016 265)" })),
+      detKey: st("detection").key, detDot: darkDot("detection"),
+      detBlurb: "per01 publishes detected=True when luggage enters the Cam1 view and False when it leaves. " + stateText("detection", "Live."),
+      beamNow: det.beam == null ? "—" : String(det.beam),
+      edgeRate: det.edges_last_60s == null ? "—" : det.edges_last_60s,
+      detectAge: fmtAge(st("detection").age_s),
+      detectLastId: st("detection").last_id || "—",
+
+      streams: [
+        { idx: "02", name: "Dimension", role: "dimension",
+          blurb: "L×W×H from the LiDAR point cloud. Carries no luggage id, so it cannot be joined to a tracked bag yet.",
+          sample: dim.latest ? "L×W×H " + dim.latest.l + "×" + dim.latest.w + "×" + dim.latest.h + " cm · " + dim.latest.source : "no measurement retained",
+          mets: [{ v: st("dimension").length, l: "entries" }, { v: (dim.recent || []).length, l: "recent" }, { v: "per02", l: "owner" }] },
+        { idx: "03", name: "Tracking", role: "tracking",
+          blurb: "Tracks every bag in Cam1 and gives it a permanent luggage_id once it crosses the enrolment line.",
+          sample: firstTrack ? (trackName(firstTrack) || "untracked") + " · " + firstTrack.class + " · zone " + firstTrack.zone + " · " + firstTrack.identity : "no tracks in the latest message",
+          mets: [{ v: trk.distinct_recent || 0, l: "tracks" }, { v: trk.enrolled_recent || 0, l: "enrolled" }, { v: trk.unenrolled_recent || 0, l: "no id" }] },
+        { idx: "04", name: "Optimization", role: "cart_plan",
+          blurb: "Packs luggage into carts per flight. Reads luggage items and publishes the cart plan.",
+          sample: plan ? plan.algorithm + " · " + plan.flights + " flights · " + plan.carts + " carts · " + plan.bags_placed + " bags" : "no cart plan retained",
+          mets: [{ v: plan ? plan.carts : "—", l: "carts" }, { v: plan ? plan.bags_placed : "—", l: "bags" }, { v: plan && plan.mean_util != null ? Math.round(plan.mean_util * 100) + "%" : "—", l: "mean util" }] },
+        { idx: "05", name: "Validation", role: "cam2",
+          blurb: "per07: is the luggage seen at Zone 2 the one enrolled at Zone 1, inside the " + win[0] + "–" + win[1] + " s window, within " + (snap.max_cycle || 3) + " cycles.",
+          sample: lastRes ? lastRes.baggage_id + " → " + lastRes.status + " · score " + fixed(lastRes.final_score, 3) + " · +" + fixed(lastRes.elapsed_transit_s, 1) + " s" : "no results yet · " + inFlight.length + " in flight",
+          mets: [{ v: inFlight.length, l: "in flight" }, { v: (val.matched || 0) + "/" + (val.total || 0), l: "matched" }, { v: win[0] + "–" + win[1] + "s", l: "window" }] }
+      ].map(s => ({ idx: s.idx, name: s.name, key: s.role === "cam2" ? "validation:results" : st(s.role).key,
+        dot: darkDot(s.role === "cam2" ? "validation" : s.role), blurb: s.blurb, sample: s.sample, mets: s.mets,
+        lastId: (st(s.role === "cam2" ? "validation" : s.role).last_id || "—") + " · " + stateText(s.role === "cam2" ? "validation" : s.role, "live") })),
+
+      drawingSpec: [
+        { n: "01", t: "The rectangular circuit at " + beltLen.toFixed(2) + " × " + beltWid.toFixed(2) + " m, belt 1.30 m wide, with chainage running clockwise from the induction end." },
+        { n: "02", t: "Zone 1 (Cam1 + LiDAR) and Zone 2 (Cam2) drawn to scale, and the blind run between them." },
+        { n: "03", t: "Camera and LiDAR positions, each with its cone of coverage." },
+        { n: "04", t: "Cart loading positions with the manual inspection spur." },
+        { n: "05", t: "Chainage ruler in metres along each run, so the plan view below can be read against it." }
+      ],
+      carts: (() => {
+        const count = (opt.inventory && opt.inventory.default && opt.inventory.default.count) || 0;
+        const out = [];
+        for (let i = 0; i < Math.min(3, Math.max(count, 1)); i++) out.push({ id: "CART-" + String(i + 1).padStart(2, "0"),
+          fill: count ? "available" : "no inventory", color: DMUTE });
+        return out;
+      })(),
+      beltDims: beltLen.toFixed(2) + " × " + beltWid.toFixed(2) + " m",
+      beltPerimeter: perim.toFixed(1), runLong: beltLen.toFixed(1),
+      zone1Range: toM(Z1_START).toFixed(1) + "–" + toM(Z1_END).toFixed(1) + " m",
+      zone2Range: toM(Z2_START).toFixed(1) + "–" + toM(Z2_END).toFixed(1) + " m",
+
+      filters: ["ALL", "ERRORS", "IN FLIGHT", "UNENROLLED"].map(label => ({
+        label: label === f ? "● " + label : label, onClick: () => this.setState({ filter: label, selIdx: 0 }) })),
+      rows: rows.length ? rows.map((r, i) => ({ id: r.id, dest: r.dest, stage: r.stage, pct: r.pct, dims: r.dims,
+        conf: r.conf, confColor: r.confN == null || isNaN(r.confN) ? DMUTE : r.confN < 0.4 ? DR : r.confN < 0.8 ? DA : DINK,
+        cart: r.cart, state: r.state, stateColor: stateColor(r.state), onClick: () => this.setState({ selIdx: i }) }))
+        : [{ id: "—", dest: "—", stage: "no luggage", pct: 0, dims: "—", conf: "—", confColor: DMUTE, cart: "—",
+             state: "", stateColor: DMUTE, onClick: () => {} }],
+
+      selId: sel ? sel.id : "nothing selected",
+      selFacts: sel ? [
+        { k: "Source", v: sel.kind === "result" ? "per07 result" : sel.kind === "flight" ? "per07 in flight" : "per04 track", c: DINK },
+        { k: "Class", v: sel.dest, c: DINK },
+        { k: "Stage", v: sel.stage, c: DINK },
+        { k: "Dimensions", v: sel.dims === "—" ? "—" : sel.dims + " cm", c: DINK },
+        { k: "Confidence", v: sel.conf, c: DINK },
+        { k: "Identity", v: selSrc.identity || selSrc.status || selSrc.phase || "—", c: sel.state === "FAIL" ? DR : DINK },
+        { k: "Elapsed", v: selSrc.elapsed_s != null ? selSrc.elapsed_s + " s" : selSrc.elapsed_transit_s ? fixed(selSrc.elapsed_transit_s, 1) + " s" : "—", c: DINK },
+        { k: "Cycles", v: selSrc.cycles != null ? selSrc.cycles + "/" + (snap.max_cycle || 3) : selSrc.cycle_count || "—", c: DINK }
+      ] : [],
+      selChecks: (sel && sel.kind === "result" ? [
+        { label: "Zone 2 luggage matches Zone 1", ok: selSrc.status === "MATCHED" },
+        { label: "Arrived inside the " + win[0] + "–" + win[1] + " s window", ok: parseFloat(selSrc.elapsed_transit_s) >= win[0] && parseFloat(selSrc.elapsed_transit_s) <= win[1] },
+        { label: "SIFT geometric evidence found", ok: parseFloat(selSrc.sift_score) > 0 },
+        { label: "Class matches", ok: selSrc.class_match === "True" },
+        { label: "Resolved within " + (snap.max_cycle || 3) + " cycles", ok: parseInt(selSrc.cycle_count, 10) <= (snap.max_cycle || 3) }
+      ] : [
+        { label: "Has a permanent luggage_id", ok: sel ? !!(selSrc.luggage_id || selSrc.baggage_id) : null },
+        { label: "Zone 1 baseline registered by per07", ok: sel ? sel.kind === "flight" : null },
+        { label: "Validated at Zone 2", ok: null }
+      ]).map(c => ({ label: c.label, verdict: c.ok == null ? "PENDING" : c.ok ? "PASS" : "REVIEW",
+        color: c.ok == null ? DMUTE : c.ok ? DG : DR, bg: c.ok == null ? "oklch(0.26 0.01 265)" : c.ok ? "oklch(0.26 0.05 152)" : "oklch(0.26 0.05 25)" })),
+      selRaw: sel ? JSON.stringify(selSrc, null, 1).slice(0, 700) : "Select a row in the ledger.",
+
+      topo: (() => {
+        const nodes = [["SNS01", "cam1"], ["PER01", "detection"], ["PER04", "tracking"], ["PER07", "validation"], ["EMS02", "ems_inspection"]];
+        const out = [];
+        nodes.forEach((nd, i) => {
+          if (i > 0) out.push({ label: "→", sub: "", size: 17, color: "oklch(0.78 0.012 265)", border: "solid transparent", pad: "0", bg: "transparent" });
+          const r = st(nd[1]);
+          out.push({ label: nd[0], sub: r.key + " · " + (r.state === "live" ? "live" : r.state === "absent" ? "absent" : fmtAge(r.age_s)),
+            size: 13, color: r.state === "live" ? DG : r.state === "absent" ? DMUTE : DA,
+            border: "solid oklch(0.44 0.016 265)", pad: "10px 0", bg: "oklch(0.20 0.012 265)" });
+        });
+        return out;
+      })(),
+      notes: [
+        { t: "Read-only feed", d: "hmi01 reads every stream with XREVRANGE and creates no consumer groups, so this page cannot slow or block the services it watches." },
+        { t: "luggage_id is the join key", d: "per04 assigns it at enrolment. per07 and the cart plan reuse it; until per04 enrols a bag nothing downstream can follow it." },
+        { t: "Freshness is shown, not hidden", d: "Every stage shows the age of its newest entry. STALE means the producer stopped, not that the belt is empty." },
+        { t: "Short retention", d: "Streams keep only about 20–400 entries, so throughput history is accumulated by hmi01 from the moment it starts." }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
